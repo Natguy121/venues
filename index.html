@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PartySpot · Birthday venues</title>
+    <meta name="description" content="Find birthday party venues near you, compare price per person and see available dates.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎂</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="src/app.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="./">🎂 PartySpot</a>
+      <p class="tagline">Find the perfect place to celebrate</p>
+    </header>
+
+    <section class="hero">
+      <h1>Birthday venues, sorted.</h1>
+      <p>Filter by location, see which dates are free and what it costs per guest.</p>
+      <form class="hero__search" id="quick-search" role="search">
+        <label class="visually-hidden" for="q">Search venues</label>
+        <input id="q" name="query" type="search" placeholder="Search by name, neighborhood or type…" autocomplete="off">
+        <button type="button" class="btn btn--light" id="locate">📍 Near me</button>
+      </form>
+    </section>
+
+    <main class="layout">
+      <button type="button" class="btn btn--ghost filters-toggle" aria-expanded="false" aria-controls="filters">
+        ⚙️ Filters <span class="filters-toggle__count"></span>
+      </button>
+
+      <form class="filters" id="filters" aria-label="Filters">
+        <fieldset class="filters__group">
+          <legend>Location</legend>
+          <label class="field">
+            <span>City</span>
+            <select name="city"><option value="">All cities</option></select>
+          </label>
+          <label class="field">
+            <span>Distance from you</span>
+            <select name="radius" disabled>
+              <option value="">Any distance</option>
+            </select>
+          </label>
+          <p class="hint" id="location-status">Use “Near me” to filter by distance.</p>
+        </fieldset>
+
+        <fieldset class="filters__group">
+          <legend>Your party</legend>
+          <label class="field">
+            <span>Date</span>
+            <input type="date" name="date">
+          </label>
+          <label class="field">
+            <span>Number of guests</span>
+            <input type="number" name="guests" min="1" max="500" placeholder="Any" inputmode="numeric">
+          </label>
+          <label class="check">
+            <input type="checkbox" name="kidFriendly"> Kid-friendly only
+          </label>
+        </fieldset>
+
+        <fieldset class="filters__group">
+          <legend>Price per person</legend>
+          <label class="field">
+            <span>Up to <output id="max-price-label"></output></span>
+            <input type="range" name="maxPrice" step="1">
+          </label>
+        </fieldset>
+
+        <fieldset class="filters__group">
+          <legend>Venue type</legend>
+          <div class="types" id="types"></div>
+        </fieldset>
+
+        <button type="button" class="btn btn--ghost" id="clear">Clear all filters</button>
+      </form>
+
+      <section class="results" aria-labelledby="results-title">
+        <div class="results__bar">
+          <h2 id="results-title" aria-live="polite">Loading venues…</h2>
+          <label class="field field--inline">
+            <span>Sort</span>
+            <select name="sort" form="filters"></select>
+          </label>
+        </div>
+        <div class="grid" id="grid"></div>
+        <div class="empty" id="empty" hidden>
+          <p>🎈 No venues match those filters.</p>
+          <button type="button" class="btn btn--primary" id="empty-clear">Clear filters</button>
+        </div>
+      </section>
+    </main>
+
+    <dialog class="dialog" id="venue-dialog"></dialog>
+
+    <footer class="site-footer">
+      <p>Sample venues are fictional. Online booking is coming in a future version.</p>
+    </footer>
+  </body>
+</html>
