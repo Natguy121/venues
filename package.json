@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "generate": "node scripts/generate-venues.js",
+    "check:images": "node scripts/check-images.js"
   },
   "engines": {
     "node": ">=20"

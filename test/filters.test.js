@@ -9,6 +9,7 @@ const venue = (overrides) => ({
   name: "Venue",
   type: "Restaurant",
   city: "Austin",
+  region: "Texas",
   area: "Downtown",
   address: "1 Main St",
   lat: 30.27,
@@ -42,6 +43,12 @@ test("drops past dates from upcomingDates", () => {
 
 test("filters by city", () => {
   assert.deepEqual(ids(searchVenues(venues, { city: "Austin" }, opts)), ["c", "a"]);
+});
+
+test("filters by region, and searches region names", () => {
+  const regional = [...venues, venue({ id: "e", name: "Echo", city: "Dallas", region: "North Texas" })];
+  assert.deepEqual(ids(searchVenues(regional, { region: "North Texas" }, opts)), ["e"]);
+  assert.deepEqual(ids(searchVenues(regional, { query: "north tex" }, opts)), ["e"]);
 });
 
 test("filters by date", () => {
@@ -92,11 +99,18 @@ test("sample data is well formed", () => {
   for (const v of sampleVenues) {
     assert.ok(!seen.has(v.id), `duplicate id ${v.id}`);
     seen.add(v.id);
-    assert.ok(v.images.length > 0, `${v.id} has no images`);
+    assert.ok(v.images.length >= 3, `${v.id} needs at least 3 photos`);
+    assert.equal(new Set(v.images).size, v.images.length, `${v.id} repeats a photo`);
+    assert.ok(v.images.every((url) => url.startsWith("https://")), `${v.id} photo URLs`);
+    assert.ok(v.region && v.city && v.area, `${v.id} location fields`);
+    // Roughly Lebanon's bounding box.
+    assert.ok(v.lat > 33.0 && v.lat < 34.7 && v.lng > 35.0 && v.lng < 36.7, `${v.id} coordinates`);
     assert.ok(v.minGuests <= v.maxGuests, `${v.id} capacity`);
     assert.ok(v.pricePerPerson > 0, `${v.id} price`);
     assert.deepEqual(v.availability, [...v.availability].sort(), `${v.id} dates sorted`);
     assert.ok(v.availability.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)), `${v.id} date format`);
   }
-  assert.ok(distinct(sampleVenues, "city").length >= 3);
+  assert.ok(sampleVenues.length >= 100);
+  assert.ok(distinct(sampleVenues, "city").length >= 20);
+  assert.equal(distinct(sampleVenues, "region").length, 5);
 });

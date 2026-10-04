@@ -14,6 +14,7 @@ const form = $("#filters");
 const grid = $("#grid");
 const dialog = $("#venue-dialog");
 const today = todayISO();
+const PAGE_SIZE = 24;
 
 let venues = [];
 let results = [];
@@ -21,6 +22,7 @@ let origin = null;
 let criteria = defaultCriteria();
 let priceCeiling = 0;
 let venueMap = null;
+let shown = PAGE_SIZE;
 
 // ---- URL <-> criteria ------------------------------------------------------
 // Filters live in the query string so searches can be bookmarked and shared.
@@ -32,6 +34,7 @@ function readURL() {
   return {
     ...defaultCriteria(),
     query: p.get("q") ?? "",
+    region: p.get("region") ?? "",
     city: p.get("city") ?? "",
     types: p.get("types") ? p.get("types").split(",") : [],
     guests: num("guests"),
@@ -46,6 +49,7 @@ function readURL() {
 function writeURL() {
   const p = new URLSearchParams();
   if (criteria.query) p.set("q", criteria.query);
+  if (criteria.region) p.set("region", criteria.region);
   if (criteria.city) p.set("city", criteria.city);
   if (criteria.types.length) p.set("types", criteria.types.join(","));
   if (criteria.guests) p.set("guests", criteria.guests);
@@ -61,11 +65,21 @@ function writeURL() {
 
 // ---- Form <-> criteria -----------------------------------------------------
 
+/** Town options, limited to the chosen region. */
+function fillTowns(region) {
+  const towns = distinct(region ? venues.filter((v) => v.region === region) : venues, "city");
+  const current = form.city.value;
+  form.city.innerHTML = `<option value="">${region ? `All of ${esc(region)}` : "All towns"}</option>` +
+    towns.map((c) => `<option>${esc(c)}</option>`).join("");
+  form.city.value = towns.includes(current) ? current : "";
+}
+
 function buildForm() {
-  form.city.insertAdjacentHTML(
+  form.region.insertAdjacentHTML(
     "beforeend",
-    distinct(venues, "city").map((c) => `<option>${esc(c)}</option>`).join(""),
+    distinct(venues, "region").map((r) => `<option>${esc(r)}</option>`).join(""),
   );
+  fillTowns("");
   form.radius.insertAdjacentHTML(
     "beforeend",
     config.radiusOptions.map((r) => `<option value="${r}">Within ${r} ${config.distanceUnit}</option>`).join(""),
@@ -86,6 +100,8 @@ function buildForm() {
 
 function syncFormFromCriteria() {
   $("#q").value = criteria.query;
+  form.region.value = criteria.region;
+  fillTowns(form.region.value);
   form.city.value = criteria.city;
   form.radius.value = criteria.radius ?? "";
   form.date.value = criteria.date;
@@ -102,6 +118,7 @@ function readCriteriaFromForm() {
   const guests = Number(form.guests.value);
   criteria = {
     query: $("#q").value,
+    region: form.region.value,
     city: form.city.value,
     types: [...form.querySelectorAll('[name="types"]:checked')].map((box) => box.value),
     guests: guests > 0 ? guests : null,
@@ -119,6 +136,7 @@ function updateControls() {
   form.sort.querySelector('[value="distance"]').disabled = !origin;
   const active = [
     criteria.query,
+    criteria.region,
     criteria.city,
     criteria.types.length,
     criteria.guests,
@@ -135,16 +153,35 @@ function updateControls() {
 function render() {
   results = searchVenues(venues, criteria, { today, origin, unit: config.distanceUnit });
   const count = results.length;
+  const place = criteria.city || criteria.region;
   $("#results-title").textContent = `${count} ${count === 1 ? "venue" : "venues"}${
-    criteria.city ? ` in ${criteria.city}` : origin && criteria.radius ? " near you" : ""
+    place ? ` in ${place}` : origin && criteria.radius ? " near you" : ""
   }`;
-  grid.innerHTML = results.map((v) => venueCardHTML(v, criteria)).join("");
   $("#empty").hidden = count > 0;
-  enhanceGalleries(grid);
+  renderCards();
   venueMap?.update(results, origin);
 }
 
-function update() {
+/** Cards are rendered a page at a time; the map always shows every result. */
+function renderCards() {
+  const visible = results.slice(0, shown);
+  grid.innerHTML = visible.map((v, i) => venueCardHTML(v, criteria, { eager: i < 6 })).join("");
+  enhanceGalleries(grid);
+  const left = results.length - visible.length;
+  $("#more").hidden = left <= 0;
+  $("#show-more").textContent = `Show ${Math.min(left, PAGE_SIZE)} more (${left} left)`;
+}
+
+function showMore() {
+  const before = grid.children.length;
+  shown += PAGE_SIZE;
+  renderCards();
+  grid.children[before]?.querySelector(".card__link")?.focus({ preventScroll: true });
+}
+
+function update(event) {
+  if (event?.target === form.region) fillTowns(form.region.value);
+  shown = PAGE_SIZE;
   readCriteriaFromForm();
   updateControls();
   render();
@@ -171,7 +208,7 @@ function clearFilters() {
 function locate() {
   const status = $("#location-status");
   if (!navigator.geolocation) {
-    status.textContent = "Your browser can't share its location. Pick a city instead.";
+    status.textContent = "Your browser can't share its location. Pick a town instead.";
     return;
   }
   status.textContent = "Finding your location…";
@@ -179,14 +216,15 @@ function locate() {
     (pos) => {
       origin = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       status.textContent = "Showing distances from your location.";
-      form.city.value = "";
+      form.region.value = "";
+      fillTowns("");
       form.sort.value = "distance";
       if (!form.radius.value) form.radius.value = String(config.radiusOptions.at(-1));
       form.radius.disabled = false;
       update();
     },
     () => {
-      status.textContent = "Couldn't get your location. Pick a city instead.";
+      status.textContent = "Couldn't get your location. Pick a town instead.";
     },
     { timeout: 10000, maximumAge: 300000 },
   );
@@ -203,6 +241,7 @@ function bindEvents() {
   $("#locate").addEventListener("click", locate);
   $("#clear").addEventListener("click", clearFilters);
   $("#empty-clear").addEventListener("click", clearFilters);
+  $("#show-more").addEventListener("click", showMore);
 
   const toggle = $(".filters-toggle");
   toggle.addEventListener("click", () => {

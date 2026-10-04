@@ -12,6 +12,7 @@ export const SORTS = {
 
 export const defaultCriteria = () => ({
   query: "",
+  region: "",
   city: "",
   types: [],
   guests: null,
@@ -45,8 +46,9 @@ export function searchVenues(venues, criteria, { today, origin = null, unit = "m
       distance: origin ? distanceIn(unit, origin, venue) : null,
     }))
     .filter((v) => {
-      if (query && ![v.name, v.city, v.area, v.address, v.type].some((s) => s.toLowerCase().includes(query)))
+      if (query && ![v.name, v.city, v.region, v.area, v.address, v.type].some((s) => s.toLowerCase().includes(query)))
         return false;
+      if (c.region && v.region !== c.region) return false;
       if (c.city && v.city !== c.city) return false;
       if (c.types.length && !c.types.includes(v.type)) return false;
       if (c.guests && (c.guests < v.minGuests || c.guests > v.maxGuests)) return false;

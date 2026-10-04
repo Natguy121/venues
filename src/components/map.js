@@ -2,7 +2,8 @@ import { esc } from "./dom.js";
 import { formatMoney } from "../format.js";
 
 // Overview map of the current results, built on Leaflet (vendor/leaflet,
-// loaded as a classic script that defines the global `L`).
+// loaded as a classic script that defines the global `L`). Nearby venues are
+// grouped with Leaflet.markercluster when it is loaded.
 
 const LEBANON_CENTER = [33.95, 35.75];
 const LEBANON_ZOOM = 9;
@@ -28,7 +29,22 @@ export function createVenueMap(container, { onSelect }) {
   map.on("focus", () => map.scrollWheelZoom.enable());
   map.on("blur", () => map.scrollWheelZoom.disable());
 
-  const markers = L.layerGroup().addTo(map);
+  const markers = (
+    L.markerClusterGroup
+      ? L.markerClusterGroup({
+          showCoverageOnHover: false,
+          maxClusterRadius: 55,
+          iconCreateFunction: (cluster) => {
+            const prices = cluster.getAllChildMarkers().map((m) => m.options.price);
+            return L.divIcon({
+              className: "map-cluster",
+              html: `<span title="${cluster.getChildCount()} venues from ${esc(formatMoney(Math.min(...prices)))} per person"><b>${cluster.getChildCount()}</b> · ${esc(formatMoney(Math.min(...prices)))}+</span>`,
+              iconSize: null,
+            });
+          },
+        })
+      : L.layerGroup()
+  ).addTo(map);
   let originMarker = null;
 
   container.addEventListener("click", (event) => {
@@ -56,7 +72,7 @@ export function createVenueMap(container, { onSelect }) {
         iconAnchor: [0, 0],
         popupAnchor: [0, -28],
       });
-      L.marker([venue.lat, venue.lng], { icon, title: venue.name, alt: venue.name })
+      L.marker([venue.lat, venue.lng], { icon, title: venue.name, alt: venue.name, price: venue.pricePerPerson })
         .bindPopup(popupHTML(venue), { minWidth: 200 })
         .addTo(markers);
     }

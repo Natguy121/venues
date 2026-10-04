@@ -18,11 +18,11 @@ function placeholder(label, index) {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
-export function galleryHTML(venue, { size = "card" } = {}) {
+export function galleryHTML(venue, { size = "card", eager = size !== "card" } = {}) {
   const slides = venue.images
     .map(
       (src, i) => `<img class="gallery__img" src="${esc(src)}" alt="${esc(venue.name)} photo ${i + 1} of ${venue.images.length}"
-        loading="${i === 0 ? "eager" : "lazy"}" data-index="${i}" draggable="false">`,
+        loading="${i === 0 && eager ? "eager" : "lazy"}" data-index="${i}" draggable="false">`,
     )
     .join("");
   const dots = venue.images.map((_, i) => `<span class="gallery__dot${i === 0 ? " is-active" : ""}"></span>`).join("");

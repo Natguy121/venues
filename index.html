@@ -7,8 +7,10 @@
     <meta name="description" content="Find birthday party venues across Lebanon, compare price per person and see available dates.">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎂</text></svg>">
     <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+    <link rel="stylesheet" href="vendor/leaflet.markercluster/MarkerCluster.css">
     <link rel="stylesheet" href="styles.css">
     <script src="vendor/leaflet/leaflet.js" defer></script>
+    <script src="vendor/leaflet.markercluster/leaflet.markercluster.js" defer></script>
     <script type="module" src="src/app.js"></script>
   </head>
   <body>
@@ -40,8 +42,12 @@
         <fieldset class="filters__group">
           <legend>Location</legend>
           <label class="field">
-            <span>City</span>
-            <select name="city"><option value="">All cities</option></select>
+            <span>Region</span>
+            <select name="region"><option value="">All of Lebanon</option></select>
+          </label>
+          <label class="field">
+            <span>Town</span>
+            <select name="city"><option value="">All towns</option></select>
           </label>
           <label class="field">
             <span>Distance from you</span>
@@ -92,6 +98,9 @@
           </label>
         </div>
         <div class="grid" id="grid"></div>
+        <div class="more" id="more" hidden>
+          <button type="button" class="btn btn--ghost" id="show-more"></button>
+        </div>
         <div class="empty" id="empty" hidden>
           <p>🎈 No venues match those filters.</p>
           <button type="button" class="btn btn--primary" id="empty-clear">Clear filters</button>

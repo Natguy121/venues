@@ -4,7 +4,7 @@ import { formatMoney, formatShortDate, formatDistance } from "../format.js";
 
 const MAX_DATE_CHIPS = 4;
 
-export function venueCardHTML(venue, criteria) {
+export function venueCardHTML(venue, criteria, { eager = false } = {}) {
   const { upcomingDates } = venue;
   const chips = criteria.date
     ? `<span class="chip chip--match">✓ ${esc(formatShortDate(criteria.date))}</span>`
@@ -15,7 +15,7 @@ export function venueCardHTML(venue, criteria) {
   const more = criteria.date ? upcomingDates.length - 1 : upcomingDates.length - MAX_DATE_CHIPS;
 
   return `<article class="card" data-id="${esc(venue.id)}">
-    ${galleryHTML(venue)}
+    ${galleryHTML(venue, { eager })}
     <div class="card__body">
       <div class="card__meta">
         <span class="badge">${esc(venue.type)}</span>
