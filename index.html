@@ -4,9 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PartySpot · Birthday venues</title>
-    <meta name="description" content="Find birthday party venues near you, compare price per person and see available dates.">
+    <meta name="description" content="Find birthday party venues across Lebanon, compare price per person and see available dates.">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎂</text></svg>">
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
     <link rel="stylesheet" href="styles.css">
+    <script src="vendor/leaflet/leaflet.js" defer></script>
     <script type="module" src="src/app.js"></script>
   </head>
   <body>
@@ -16,13 +18,17 @@
     </header>
 
     <section class="hero">
-      <h1>Birthday venues, sorted.</h1>
+      <h1>Birthday venues across Lebanon.</h1>
       <p>Filter by location, see which dates are free and what it costs per guest.</p>
       <form class="hero__search" id="quick-search" role="search">
         <label class="visually-hidden" for="q">Search venues</label>
-        <input id="q" name="query" type="search" placeholder="Search by name, neighborhood or type…" autocomplete="off">
+        <input id="q" name="query" type="search" placeholder="Search Beirut, Jounieh, Byblos, bowling…" autocomplete="off">
         <button type="button" class="btn btn--light" id="locate">📍 Near me</button>
       </form>
+    </section>
+
+    <section class="map-section" aria-label="Map of venues">
+      <div class="venue-map" id="map"></div>
     </section>
 
     <main class="layout">

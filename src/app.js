@@ -6,6 +6,7 @@ import { formatMoney } from "./format.js";
 import { venueCardHTML } from "./components/card.js";
 import { enhanceGalleries } from "./components/gallery.js";
 import { showVenueDetails } from "./components/details.js";
+import { createVenueMap } from "./components/map.js";
 import { esc } from "./components/dom.js";
 
 const $ = (selector) => document.querySelector(selector);
@@ -19,6 +20,7 @@ let results = [];
 let origin = null;
 let criteria = defaultCriteria();
 let priceCeiling = 0;
+let venueMap = null;
 
 // ---- URL <-> criteria ------------------------------------------------------
 // Filters live in the query string so searches can be bookmarked and shared.
@@ -139,6 +141,7 @@ function render() {
   grid.innerHTML = results.map((v) => venueCardHTML(v, criteria)).join("");
   $("#empty").hidden = count > 0;
   enhanceGalleries(grid);
+  venueMap?.update(results, origin);
 }
 
 function update() {
@@ -232,6 +235,7 @@ async function init() {
   syncFormFromCriteria();
   readCriteriaFromForm(); // normalise values the form rejected
   bindEvents();
+  venueMap = createVenueMap($("#map"), { onSelect: openVenue });
   render();
   const deepLink = new URLSearchParams(location.search).get("venue");
   if (deepLink) openVenue(deepLink);

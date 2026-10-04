@@ -1,12 +1,16 @@
 # PartySpot — birthday venue finder
 
-A website for finding birthday party venues. Filter by location, see each venue's
+A website for finding birthday party venues in Lebanon. Filter by location, see each venue's
 available dates and price per person, and browse photos right in the results.
 
 ## Features
 
-- **Location filtering:** pick a city, or use **📍 Near me** (browser geolocation) to
-  filter by distance and sort nearest-first.
+- **Map first:** the page opens on a map of Lebanon with a price marker for every
+  venue that matches your filters. Tap a marker for a photo, the price and a link to
+  the venue's details.
+- **Location filtering:** pick a town (Beirut, Jounieh, Byblos, Batroun, Tripoli,
+  Zahle and more), or use **📍 Near me** (browser geolocation) to
+  filter by distance in km and sort nearest-first.
 - **More filters:** date, number of guests (checked against venue capacity), max
   price per person, venue type, kid-friendly only, and free-text search.
 - **Summary cards:** a swipeable photo gallery, price per person, guest range,
@@ -40,9 +44,10 @@ src/
   filters.js            pure search/filter/sort logic (unit tested)
   config.js             locale, currency, distance unit, booking feature flag
   data/venues.js        sample venue catalogue
-  components/           card, gallery, calendar and details-dialog rendering
+  components/           card, gallery, calendar, map and details-dialog rendering
 test/                   node:test unit tests
 server.js               zero-dependency dev server
+vendor/leaflet/         Leaflet 1.9.4 map library (BSD-2 licence), bundled locally
 ```
 
 ## Venue data
@@ -58,7 +63,10 @@ Each venue in `src/data/venues.js` looks like this:
 | `images` | photo URLs shown in the gallery (a generated placeholder appears if one fails to load) |
 | `description`, `includes`, `rating`, `kidFriendly` | details |
 
-The sample venues are fictional and use Unsplash stock photos. Their availability
+The sample venues are fictional, placed in real Lebanese towns with approximate
+coordinates, priced in USD, and use Unsplash stock photos. Map tiles come from
+OpenStreetMap; for heavy production traffic, switch to a tile provider that allows
+it (see their tile usage policy). Their availability
 runs from October 2026 to early March 2027.
 
 ## Roadmap: online booking
