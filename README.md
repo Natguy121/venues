@@ -1,4 +1,4 @@
-# PartySpot — kids' party and family outing finder
+# Birthday Venues Lebanon
 
 A website for **parents of children aged 0 to 17** in Lebanon, for finding places
 for a child's birthday party or a family day out. Parents pick their child's age
@@ -34,6 +34,13 @@ group and where they are, and get a map and list of suitable places.
   venues show a colourful icon for their type and a "See photos on Google Maps" link.
 - Friendly, colourful look; responsive, light and dark themes, keyboard accessible.
   Filters are kept in the URL so parents can share a search (location never is).
+
+### Party for (boys, girls or both)
+
+Parents can choose Everyone, Boys, Girls or Boys & girls. A venue counts as suitable
+for both unless its entry in `data/lebanon_venues.md` has a `- For: Boys` or
+`- For: Girls` line. No venue in the list has one yet, so every choice currently
+shows all venues; add the line for venues that cater to one group.
 
 ### Ages
 

@@ -1,18 +1,18 @@
 :root {
-  --bg: #fdf8f4;
+  --bg: #f4f9fb;
   --surface: #ffffff;
-  --surface-2: #f6efe8;
-  --text: #24181a;
-  --muted: #74656a;
-  --border: #eadfd6;
-  --accent: #e0457b;
-  --accent-strong: #c22e63;
-  --accent-soft: #fde4ee;
+  --surface-2: #e9f3f6;
+  --text: #10242e;
+  --muted: #5b6f78;
+  --border: #d6e6ec;
+  --accent: #1f6fd1;
+  --accent-strong: #1556a8;
+  --accent-soft: #dceafb;
   --success: #1f8a5b;
   --success-soft: #ddf4e9;
-  --hero-from: #e0457b;
-  --hero-to: #f59e42;
-  --shadow: 0 1px 2px rgb(36 24 26 / 6%), 0 8px 24px rgb(36 24 26 / 8%);
+  --hero-from: #1f6fd1;
+  --hero-to: #1fa85f;
+  --shadow: 0 1px 2px rgb(16 36 46 / 6%), 0 8px 24px rgb(16 36 46 / 8%);
   --radius: 16px;
   --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color-scheme: light;
@@ -20,19 +20,19 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #17121a;
-    --surface: #221b25;
-    --surface-2: #2c2330;
-    --text: #f5ecef;
-    --muted: #b3a3ab;
-    --border: #3a2f3e;
-    --accent: #ff6b9c;
-    --accent-strong: #ff8fb4;
-    --accent-soft: #4a2335;
+    --bg: #0f1a1f;
+    --surface: #172630;
+    --surface-2: #1f323d;
+    --text: #e8f3f6;
+    --muted: #9bb3bd;
+    --border: #2b4350;
+    --accent: #5aa6ff;
+    --accent-strong: #8cc2ff;
+    --accent-soft: #1d3757;
     --success: #5fd39b;
     --success-soft: #1d3b2e;
-    --hero-from: #a52a5b;
-    --hero-to: #b8642a;
+    --hero-from: #174f94;
+    --hero-to: #157a45;
     --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 35%);
     color-scheme: dark;
   }
@@ -84,7 +84,7 @@ img { display: block; max-width: 100%; }
 .hero__search input {
   flex: 1 1 16rem; min-width: 0;
   padding: 0.8rem 1rem; border-radius: 999px; border: 0;
-  background: #fff; color: #24181a;
+  background: #fff; color: #10242e;
 }
 
 /* ---- Buttons ---- */
@@ -209,7 +209,7 @@ img { display: block; max-width: 100%; }
 .gallery__nav {
   position: absolute; top: 50%; transform: translateY(-50%);
   width: 2.2rem; height: 2.2rem; border-radius: 50%; border: 0;
-  background: rgb(255 255 255 / 88%); color: #24181a; font-size: 1.4rem; line-height: 1;
+  background: rgb(255 255 255 / 88%); color: #10242e; font-size: 1.4rem; line-height: 1;
   cursor: pointer; opacity: 0; transition: opacity 0.15s;
   box-shadow: 0 2px 8px rgb(0 0 0 / 20%);
 }
@@ -230,12 +230,12 @@ img { display: block; max-width: 100%; }
   padding: 0; border: 0; border-radius: calc(var(--radius) * 1.25);
   background: var(--surface); color: var(--text); box-shadow: var(--shadow);
 }
-.dialog::backdrop { background: rgb(20 10 15 / 60%); }
+.dialog::backdrop { background: rgb(8 20 26 / 60%); }
 .details { position: relative; }
 .details__close {
   position: absolute; top: 0.75rem; right: 0.75rem; z-index: 2;
   width: 2.4rem; height: 2.4rem; border-radius: 50%; border: 0;
-  background: rgb(255 255 255 / 92%); color: #24181a; font-size: 1.5rem; cursor: pointer;
+  background: rgb(255 255 255 / 92%); color: #10242e; font-size: 1.5rem; cursor: pointer;
 }
 .details__body {
   display: grid; grid-template-columns: minmax(0, 1fr) 20rem; gap: 2rem;
@@ -364,7 +364,7 @@ img { display: block; max-width: 100%; }
 .hero__where { display: flex; flex-wrap: wrap; gap: 0.5rem; max-width: 46rem; }
 .hero__where select {
   flex: 1 1 11rem; min-width: 0; padding: 0.7rem 1rem; border-radius: 999px; border: 0;
-  background: #fff; color: #24181a; font-weight: 600;
+  background: #fff; color: #10242e; font-weight: 600;
 }
 .hero__hint { margin: 0.4rem 0 0; font-size: 0.85rem; opacity: 0.95; min-height: 1.2em; }
 .hero__search { margin-top: 0.25rem; }
@@ -373,13 +373,13 @@ img { display: block; max-width: 100%; }
 .card__banner, .details__banner {
   display: grid; place-items: center; aspect-ratio: 16 / 7;
   font-size: 3.2rem; line-height: 1;
-  background: linear-gradient(135deg, #ffd6e5, #ffe9c7);
+  background: linear-gradient(135deg, #d3e6fb, #d4f3e1);
 }
 .details__banner { aspect-ratio: auto; height: 9rem; font-size: 4.5rem; }
 .card__banner--pools { background: linear-gradient(135deg, #c9ecff, #d5f5e3); }
 .card__banner--family { background: linear-gradient(135deg, #fff1c1, #ffd9c2); }
 @media (prefers-color-scheme: dark) {
-  .card__banner, .details__banner { background: linear-gradient(135deg, #5a2a40, #5a4026); }
+  .card__banner, .details__banner { background: linear-gradient(135deg, #1d3a5c, #1d4a33); }
   .card__banner--pools { background: linear-gradient(135deg, #1f4256, #1f4a37); }
   .card__banner--family { background: linear-gradient(135deg, #574a1f, #573420); }
 }
@@ -407,4 +407,4 @@ img { display: block; max-width: 100%; }
   width: 16px; height: 16px; border-radius: 50%;
   background: #2f6fec; border: 3px solid #fff; box-shadow: 0 0 0 4px rgb(47 111 236 / 30%);
 }
-.gm-style .map-popup { color: #24181a; }
+.gm-style .map-popup { color: #10242e; }

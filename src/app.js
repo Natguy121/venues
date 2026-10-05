@@ -1,7 +1,7 @@
 import { listVenues } from "./api.js";
 import { config } from "./config.js";
 import { todayISO } from "./dates.js";
-import { searchVenues, defaultCriteria, distinct, dataAvailable, SORTS, AGE_GROUPS } from "./filters.js";
+import { searchVenues, defaultCriteria, distinct, dataAvailable, SORTS, AGE_GROUPS, GENDERS } from "./filters.js";
 import { formatMoney } from "./format.js";
 import { venueCardHTML } from "./components/card.js";
 import { enhanceGalleries } from "./components/gallery.js";
@@ -39,6 +39,7 @@ function readURL() {
   return {
     ...defaultCriteria(),
     query: p.get("q") ?? "",
+    gender: GENDERS.some((g) => g.id && g.id === p.get("for")) ? p.get("for") : "",
     ages: (p.get("ages") ?? "").split(",").filter((id) => AGE_GROUPS.some((g) => g.id === id)),
     category: p.get("occasion") ?? "",
     region: p.get("region") ?? "",
@@ -56,6 +57,7 @@ function readURL() {
 function writeURL() {
   const p = new URLSearchParams();
   if (criteria.query) p.set("q", criteria.query);
+  if (criteria.gender) p.set("for", criteria.gender);
   if (criteria.ages.length) p.set("ages", criteria.ages.join(","));
   if (criteria.category) p.set("occasion", criteria.category);
   if (criteria.region) p.set("region", criteria.region);
@@ -100,6 +102,10 @@ function buildForm() {
     (g) => `<label class="age-chip"><input type="checkbox" name="ages" value="${g.id}">
       <span><b aria-hidden="true">${g.icon}</b> ${esc(g.label)} <small>${g.ages}</small></span></label>`,
   ).join("");
+  $("#gender-chips").innerHTML = GENDERS.map(
+    (g) => `<label class="age-chip"><input type="radio" name="gender" value="${g.id}"${g.id ? "" : " checked"}>
+      <span><b aria-hidden="true">${g.icon}</b> ${esc(g.label)}</span></label>`,
+  ).join("");
   if (!info.ages) $("#age-chips").closest("fieldset").hidden = true;
   const categories = distinct(venues, "category");
   $("#categories").innerHTML = ["", ...categories]
@@ -140,6 +146,7 @@ function buildForm() {
 function syncFormFromCriteria() {
   $("#q").value = criteria.query;
   ageBoxes().forEach((box) => (box.checked = criteria.ages.includes(box.value)));
+  document.querySelectorAll('#gender-chips [name="gender"]').forEach((r) => (r.checked = r.value === criteria.gender));
   const radio = form.querySelector(`[name="category"][value="${CSS.escape(criteria.category)}"]`);
   (radio ?? form.querySelector('[name="category"][value=""]')).checked = true;
   fillTypes(radio ? criteria.category : "");
@@ -161,6 +168,7 @@ function readCriteriaFromForm() {
   const guests = Number(form.guests.value);
   criteria = {
     query: $("#q").value,
+    gender: document.querySelector('#gender-chips [name="gender"]:checked')?.value ?? "",
     ages: ageBoxes().filter((box) => box.checked).map((box) => box.value),
     category: form.querySelector('[name="category"]:checked')?.value ?? "",
     region: form.region.value,

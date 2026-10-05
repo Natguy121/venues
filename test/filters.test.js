@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { searchVenues, estimateTotal, distinct, dataAvailable, suitsAges, AGE_GROUPS } from "../src/filters.js";
+import { searchVenues, estimateTotal, distinct, dataAvailable, suitsAges, AGE_GROUPS, suitsGender } from "../src/filters.js";
 import { distanceKm } from "../src/geo.js";
 import { venues as sampleVenues } from "../src/data/venues.js";
 
@@ -177,4 +177,12 @@ test("venue list is well formed and only for children", () => {
   for (const group of AGE_GROUPS) {
     assert.ok(searchVenues(sampleVenues, { ages: [group.id] }, opts).length >= 10, `enough venues for ${group.label}`);
   }
+});
+
+test("party-for filter: boys, girls or both", () => {
+  const boys = venue({ gender: "boys" }), girls = venue({ gender: "girls" }), both = venue({});
+  assert.deepEqual([boys, girls, both].map((v) => suitsGender(v, "")), [true, true, true]);
+  assert.deepEqual([boys, girls, both].map((v) => suitsGender(v, "boys")), [true, false, true]);
+  assert.deepEqual([boys, girls, both].map((v) => suitsGender(v, "girls")), [false, true, true]);
+  assert.deepEqual([boys, girls, both].map((v) => suitsGender(v, "both")), [false, false, true]);
 });

@@ -133,6 +133,10 @@ function parse(markdown) {
       const link = m[2].match(/^\[([^\]]+)\]\(([^)]+)\)$/);
       if (!link) fail(entry, `can't read link "${m[2]}"`);
       entry.links.push({ label: LINK_LABELS[m[1]], text: link[1], url: link[2] });
+    } else if ((m = line.match(/^- For:\s*(.+)$/))) {
+      const g = m[1].trim().toLowerCase();
+      if (!["boys", "girls", "both"].includes(g)) fail(entry, `"For" must be Boys, Girls or Both, not "${m[1]}"`);
+      entry.gender = g;
     } else if ((m = line.match(/^- Ages:\s*(.+)$/))) {
       const ages = m[1].trim().match(/^(\d+)\s*[–-]\s*(\d+)$/);
       if (/^18\+$/.test(m[1].trim())) entry.adultsOnly = true;
@@ -191,6 +195,7 @@ const venues = entries.filter((e) => !e.adultsOnly).map((entry) => {
     category: OCCASION_BY_TYPE[type] ?? OCCASION_BY_SECTION[entry.category],
     type,
     minAge: entry.minAge,
+    gender: entry.gender ?? "both",
     maxAge: entry.maxAge,
     city: town.city,
     region: town.region,
