@@ -53,7 +53,7 @@ for (const href of ["vendor/leaflet/leaflet.css", "vendor/leaflet.markercluster/
 // Scripts move to the end of <body> so they run after the page is parsed,
 // in the order the original deferred/module scripts ran.
 const scripts = [];
-for (const src of ["vendor/leaflet/leaflet.js", "vendor/leaflet.markercluster/leaflet.markercluster.js"]) {
+for (const src of ["vendor/leaflet/leaflet.js", "vendor/leaflet.markercluster/leaflet.markercluster.js", "vendor/markerclusterer/index.umd.js"]) {
   replace(new RegExp(`\\s*<script src="${src}" defer></script>`), "");
   scripts.push(read(src));
 }

@@ -4,7 +4,8 @@ import { renderCalendar } from "./calendar.js";
 import { formatMoney, formatLongDate, formatDistance } from "../format.js";
 import { billableGuests, estimateTotal } from "../filters.js";
 import { config } from "../config.js";
-import { priceLevelHTML, ratingHTML, agesLabel, typeIcon } from "./card.js";
+import { priceLevelHTML, ratingHTML, agesLabel, bannerHTML } from "./card.js";
+import { loadVenuePhotos } from "./photos.js";
 
 // The venue's own Google Maps pin when known, otherwise a search by name.
 const mapsLink = (venue) =>
@@ -40,7 +41,7 @@ export function showVenueDetails(dialog, venue, { today, date, guests }) {
   dialog.innerHTML = `
     <article class="details">
       <button type="button" class="details__close" aria-label="Close">×</button>
-      ${venue.images?.length ? galleryHTML(venue, { size: "large" }) : `<div class="details__banner card__banner--${esc(venue.category?.split(" ")[0].toLowerCase() ?? "other")}" aria-hidden="true">${typeIcon(venue.type)}</div>`}
+      ${venue.images?.length ? galleryHTML(venue, { size: "large" }) : bannerHTML(venue, "large")}
       <div class="details__body">
         <div class="details__main">
           <div class="card__meta">
@@ -116,5 +117,6 @@ export function showVenueDetails(dialog, venue, { today, date, guests }) {
   updateSummary();
   enhanceGalleries(dialog);
   dialog.showModal();
+  loadVenuePhotos(dialog, new Map([[venue.id, venue]]));
   dialog.scrollTop = 0;
 }

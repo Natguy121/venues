@@ -1,5 +1,9 @@
 # Venue photos
 
+With a Google Maps API key, venues show their own Google Maps photos automatically
+(see "Real venue photos" in the main README). Photos you put here take priority
+over Google's, for example ones a venue sends you.
+
 Put each venue's photos in a folder named after its id, for example:
 
 ```

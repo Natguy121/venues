@@ -7,6 +7,9 @@ import { venueCardHTML } from "./components/card.js";
 import { enhanceGalleries } from "./components/gallery.js";
 import { showVenueDetails } from "./components/details.js";
 import { createVenueMap } from "./components/map.js";
+import { createGoogleVenueMap } from "./components/google-map.js";
+import { loadVenuePhotos } from "./components/photos.js";
+import { onGoogleFailure } from "./google.js";
 import { esc } from "./components/dom.js";
 
 const $ = (selector) => document.querySelector(selector);
@@ -23,6 +26,7 @@ let origin = null;
 let criteria = defaultCriteria();
 let priceCeiling = 0;
 let venueMap = null;
+let venueById = new Map();
 let shown = PAGE_SIZE;
 
 // ---- URL <-> criteria ------------------------------------------------------
@@ -217,6 +221,7 @@ function renderCards() {
   const visible = results.slice(0, shown);
   grid.innerHTML = visible.map((v, i) => venueCardHTML(v, criteria, { eager: i < 6 })).join("");
   enhanceGalleries(grid);
+  loadVenuePhotos(grid, venueById);
   const left = results.length - visible.length;
   $("#more").hidden = left <= 0;
   $("#show-more").textContent = `Show ${Math.min(left, PAGE_SIZE)} more (${left} left)`;
@@ -318,16 +323,40 @@ function bindEvents() {
   });
 }
 
+/**
+ * Google Maps when a key is set (required alongside Google's place photos),
+ * otherwise, or if Google fails, the OpenStreetMap map.
+ */
+async function setUpMap() {
+  const options = { onSelect: openVenue };
+  let switched = false;
+  const useOpenStreetMap = () => {
+    if (switched) return;
+    switched = true;
+    const fresh = document.createElement("div"); // clear anything Google drew
+    fresh.className = "venue-map";
+    fresh.id = "map";
+    $("#map").replaceWith(fresh);
+    venueMap = createVenueMap(fresh, options);
+    venueMap?.update(results, origin);
+  };
+  onGoogleFailure(useOpenStreetMap);
+  venueMap = await createGoogleVenueMap($("#map"), options);
+  if (venueMap) venueMap.update(results, origin);
+  else useOpenStreetMap();
+}
+
 async function init() {
   venues = await listVenues();
+  venueById = new Map(venues.map((v) => [v.id, v]));
   info = dataAvailable(venues);
   buildForm();
   criteria = readURL();
   syncFormFromCriteria();
   readCriteriaFromForm(); // normalise values the form rejected
   bindEvents();
-  venueMap = createVenueMap($("#map"), { onSelect: openVenue });
   render();
+  setUpMap();
   writeURL(); // drop parameters the form rejected
   const deepLink = new URLSearchParams(location.search).get("venue");
   if (deepLink) openVenue(deepLink);

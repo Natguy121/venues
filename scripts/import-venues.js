@@ -199,6 +199,7 @@ const venues = entries.filter((e) => !e.adultsOnly).map((entry) => {
     lat: entry.lat,
     lng: entry.lng,
     mapsUrl: entry.mapsUrl,
+    placeId: new URL(entry.mapsUrl).searchParams.get("query_place_id") ?? undefined,
     rating: entry.rating,
     reviews: entry.reviews,
   };

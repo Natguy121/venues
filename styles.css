@@ -195,7 +195,15 @@ img { display: block; max-width: 100%; }
   scrollbar-width: none; overscroll-behavior-x: contain;
 }
 .gallery__track::-webkit-scrollbar { display: none; }
-.gallery__img { flex: 0 0 100%; width: 100%; object-fit: cover; scroll-snap-align: start; }
+.gallery__slide { position: relative; flex: 0 0 100%; margin: 0; scroll-snap-align: start; }
+.gallery__img { width: 100%; object-fit: cover; }
+.gallery__credit {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 1.4rem 0.6rem 0.35rem;
+  font-size: 0.7rem; color: #fff; text-align: left; pointer-events: none;
+  background: linear-gradient(transparent, rgb(0 0 0 / 55%));
+}
+.gallery__credit a { color: #fff; pointer-events: auto; }
+.gallery__dots { z-index: 1; }
 .gallery--card .gallery__img { aspect-ratio: 16 / 10; }
 .gallery--large .gallery__img { aspect-ratio: 16 / 8; max-height: 26rem; }
 .gallery__nav {
@@ -210,7 +218,7 @@ img { display: block; max-width: 100%; }
 .gallery:hover .gallery__nav, .gallery__nav:focus-visible { opacity: 1; }
 @media (hover: none) { .gallery__nav { display: none; } }
 .gallery__dots {
-  position: absolute; bottom: 0.6rem; left: 50%; transform: translateX(-50%);
+  position: absolute; bottom: 1.6rem; left: 50%; transform: translateX(-50%);
   display: flex; gap: 0.3rem;
 }
 .gallery__dot { width: 0.45rem; height: 0.45rem; border-radius: 50%; background: rgb(255 255 255 / 55%); }
@@ -384,3 +392,19 @@ img { display: block; max-width: 100%; }
   .age-chip span { padding: 0.5rem 0.8rem; font-size: 0.9rem; }
   .hero__where .btn { flex: 1 1 100%; }
 }
+
+/* ---- Google Maps markers (used when a Google Maps API key is set) ---- */
+.gmap-pin span {
+  display: block; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--accent); border: 3px solid #fff; box-shadow: 0 2px 6px rgb(0 0 0 / 35%);
+}
+.gmap-cluster {
+  min-width: 2.2rem; padding: 0.35rem 0.6rem; border-radius: 999px; text-align: center;
+  background: var(--text); color: var(--bg); font: 600 0.85rem var(--font);
+  border: 2px solid var(--bg); box-shadow: 0 2px 8px rgb(0 0 0 / 35%);
+}
+.gmap-you {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #2f6fec; border: 3px solid #fff; box-shadow: 0 0 0 4px rgb(47 111 236 / 30%);
+}
+.gm-style .map-popup { color: #24181a; }

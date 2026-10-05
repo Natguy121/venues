@@ -20,6 +20,11 @@ const TYPE_ICONS = {
 };
 export const typeIcon = (type) => TYPE_ICONS[type] ?? "🎉";
 
+/** Icon banner shown until (or instead of) photos; data-photos lets photos.js fill it. */
+export const bannerHTML = (venue, size) =>
+  `<div class="${size === "large" ? "details__banner" : "card__banner"} card__banner--${esc(venue.category?.split(" ")[0].toLowerCase() ?? "other")}"
+    aria-hidden="true"${venue.placeId ? ` data-photos="${esc(venue.id)}" data-photo-size="${size}"` : ""}>${typeIcon(venue.type)}</div>`;
+
 /** "Ages 1–10", or "All ages" for 0–17. */
 export const agesLabel = (venue) =>
   venue.minAge == null ? "" : venue.minAge === 0 && venue.maxAge === 17 ? "All ages" : `Ages ${venue.minAge}–${venue.maxAge}`;
@@ -74,7 +79,7 @@ function datesHTML(venue, criteria) {
 
 export function venueCardHTML(venue, criteria, { eager = false } = {}) {
   return `<article class="card" data-id="${esc(venue.id)}">
-    ${venue.images?.length ? galleryHTML(venue, { eager }) : `<div class="card__banner card__banner--${esc(venue.category?.split(" ")[0].toLowerCase() ?? "other")}" aria-hidden="true">${typeIcon(venue.type)}</div>`}
+    ${venue.images?.length ? galleryHTML(venue, { eager }) : bannerHTML(venue, "card")}
     <div class="card__body">
       <div class="card__meta">
         <span class="badge">${esc(venue.type)}</span>

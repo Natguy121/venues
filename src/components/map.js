@@ -9,6 +9,19 @@ import { placeLabel, ratingHTML, agesLabel, typeIcon } from "./card.js";
 const LEBANON_CENTER = [33.95, 35.75];
 const LEBANON_ZOOM = 9;
 
+/** Popup content shared by the OpenStreetMap and Google maps. */
+export function popupHTML(venue) {
+  return `<div class="map-popup">
+    ${venue.images?.length ? `<img src="${esc(venue.images[0])}" alt="" onerror="this.remove()">` : ""}
+    <strong>${typeIcon(venue.type)} ${esc(venue.name)}</strong>
+    <span>${esc(venue.type)} · ${esc(placeLabel(venue))}</span>
+    ${agesLabel(venue) ? `<span>${esc(agesLabel(venue))}</span>` : ""}
+    ${ratingHTML(venue)}
+    ${venue.pricePerPerson != null ? `<span><b>${esc(formatMoney(venue.pricePerPerson))}</b> per person</span>` : ""}
+    <button type="button" class="btn btn--primary btn--small" data-map-open="${esc(venue.id)}">View details</button>
+  </div>`;
+}
+
 /**
  * @param container element to draw the map in
  * @param options { onSelect(venueId) } called when "View details" is clicked in a popup
@@ -56,18 +69,6 @@ export function createVenueMap(container, { onSelect }) {
     const button = event.target.closest("[data-map-open]");
     if (button) onSelect(button.dataset.mapOpen);
   });
-
-  function popupHTML(venue) {
-    return `<div class="map-popup">
-      ${venue.images?.length ? `<img src="${esc(venue.images[0])}" alt="" onerror="this.remove()">` : ""}
-      <strong>${typeIcon(venue.type)} ${esc(venue.name)}</strong>
-      <span>${esc(venue.type)} · ${esc(placeLabel(venue))}</span>
-      ${agesLabel(venue) ? `<span>${esc(agesLabel(venue))}</span>` : ""}
-      ${ratingHTML(venue)}
-      ${venue.pricePerPerson != null ? `<span><b>${esc(formatMoney(venue.pricePerPerson))}</b> per person</span>` : ""}
-      <button type="button" class="btn btn--primary btn--small" data-map-open="${esc(venue.id)}">View details</button>
-    </div>`;
-  }
 
   function update(results, origin) {
     markers.clearLayers();

@@ -27,9 +27,11 @@ group and where they are, and get a map and list of suitable places.
   tap-to-call phone, Saturday hours, website or social links, four notes summarised
   from Google reviews, and a link to the venue's Google Maps page for photos and
   directions.
-- **Photos:** shown as a swipeable gallery for any venue with files in
-  `photos/<venue id>/` (see [photos/README.md](photos/README.md)). Venues without
-  photos get a colourful icon for their type and a "See photos on Google Maps" link.
+- **Real venue photos:** with a Google Maps API key, each venue shows its own photos
+  from Google Maps, with each photographer's credit (see
+  [Real venue photos](#real-venue-photos)). Photos you add in `photos/<venue id>/`
+  take priority (see [photos/README.md](photos/README.md)). Until either is set up,
+  venues show a colourful icon for their type and a "See photos on Google Maps" link.
 - Friendly, colourful look; responsive, light and dark themes, keyboard accessible.
   Filters are kept in the URL so parents can share a search (location never is).
 
@@ -48,6 +50,41 @@ so the site shows "Price on request" and "call for dates". The code supports all
 these per venue: filters and sorts for a detail (max price, guests, date; price and
 soonest-date sorts), the availability calendar and the price estimate appear
 automatically once any venue has it.
+
+## Real venue photos
+
+Every venue in the list has its Google place ID, so the site can show that place's
+own photos from Google Maps. The photos are fetched live from Google when a card
+scrolls into view, with each photographer's name and link on the photo, as Google
+requires. Nothing is downloaded or stored, which Google's terms don't allow.
+Google's terms also don't allow its place photos next to another provider's map, so
+**with a key set, the site's map switches to Google Maps** automatically.
+
+To turn it on:
+
+1. In the [Google Cloud console](https://console.cloud.google.com/), create a project
+   and attach a billing account.
+2. Enable **Maps JavaScript API** and **Places API (New)**.
+3. Create an **API key**, then restrict it. Under *Application restrictions*,
+   choose *Websites* and add your site's address, for example
+   `https://<user>.github.io/*`. Under *API restrictions*, allow only the two APIs
+   above. The key is visible in the page (that's normal for Maps keys); the website
+   restriction stops others using it.
+4. To control cost, set a daily quota on the Places API and a budget alert in
+   *Billing*. Place Details and Place Photo requests are billed per request after a
+   free monthly allowance; check the current
+   [pricing](https://mapsplatform.google.com/pricing/). The site keeps requests low:
+   photos load only for venues on screen, at most `googlePhotosPerVenue` (6) each,
+   once per visit.
+5. Optional for production: create a **Map ID** (*Google Maps Platform → Map
+   management*) and set `googleMapId`. `DEMO_MAP_ID` works for trying it out.
+6. Put the key in `src/config.js` (`googleMapsApiKey: "..."`), run `npm run build`,
+   and publish the site, for example with GitHub Pages. Google only accepts the key
+   from the website addresses you allowed, so a copy opened as a file on a phone
+   falls back to the OpenStreetMap map without Google photos.
+
+If the key is missing, rejected or Google can't be reached, the site falls back to
+the OpenStreetMap map and icon banners, so it never breaks.
 
 ## Running locally
 
@@ -87,14 +124,16 @@ src/
   app.js                UI wiring: filters, URL state, results, geolocation
   api.js                data-access layer (the only thing that touches data)
   filters.js            pure search/filter/sort logic (unit tested)
-  config.js             locale, currency, distance unit, booking feature flag
+  config.js             locale, currency, distance unit, booking flag, Google Maps key
+  google.js             loads Google Maps and fetches each venue's Google photos
   data/venues.js        generated venue data (don't edit by hand)
   components/           card, gallery, calendar, map and details-dialog rendering
 test/                   node:test unit tests
 scripts/build.js        bundles everything into dist/partyspot.html
 dist/partyspot.html     the single-file build (works opened directly, e.g. on phones)
 server.js               zero-dependency dev server
-vendor/                 Leaflet 1.9.4 (BSD-2) and Leaflet.markercluster 1.5.3 (MIT)
+vendor/                 Leaflet 1.9.4 (BSD-2), Leaflet.markercluster 1.5.3 (MIT),
+                        @googlemaps/markerclusterer 2.6.2 (Apache-2.0)
 ```
 
 ## Venue data
