@@ -37,13 +37,24 @@ galleries.
 
 ## Running locally
 
-Requires Node.js 20+. There are no dependencies to install.
+Requires Node.js 20+. The site itself has no dependencies; `npm install` only
+fetches esbuild, used by `npm run build`.
 
 ```sh
 npm start        # serves the site at http://localhost:8080
 npm test         # unit tests for the filtering logic and venue data
 npm run import   # rebuild src/data/venues.js from the venue list
+npm run build    # rebuild dist/partyspot.html (run npm install once first)
 ```
+
+### Phones and opening the file directly
+
+Browsers won't run the site's script modules from a file opened directly
+(`file://`), which is what happens on a phone or when you double-click
+`index.html`: the page stays on "Loading venues…". Use
+**`dist/partyspot.html`** instead: the whole site in one file, which works opened
+directly, sent to a phone, or hosted anywhere. Re-run `npm run build` after
+changing the code or the venue list, and commit the result.
 
 Any static file server works too (the site is plain HTML, CSS and ES modules), so it
 can be hosted on GitHub Pages, Netlify and similar hosts as-is.
@@ -65,6 +76,8 @@ src/
   data/venues.js        generated venue data (don't edit by hand)
   components/           card, gallery, calendar, map and details-dialog rendering
 test/                   node:test unit tests
+scripts/build.js        bundles everything into dist/partyspot.html
+dist/partyspot.html     the single-file build (works opened directly, e.g. on phones)
 server.js               zero-dependency dev server
 vendor/                 Leaflet 1.9.4 (BSD-2) and Leaflet.markercluster 1.5.3 (MIT)
 ```

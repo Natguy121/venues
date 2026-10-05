@@ -7,9 +7,13 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test",
-    "import": "node scripts/import-venues.js"
+    "import": "node scripts/import-venues.js",
+    "build": "node scripts/build.js"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12"
   }
 }
