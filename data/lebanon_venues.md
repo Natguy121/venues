@@ -4,7 +4,7 @@ Each location is the venue's own Google Maps pin, looked up on 5 October 2026. R
 
 Where a venue has no website of its own, its official Instagram or Facebook page is given instead. "None found" means I could not find an official page.
 
-"Ages" is the suggested age range for children, based on the venue type and its reviews. It is a guide for parents, not a rule set by the venue. Venues marked "18+" (nightclubs, bars, adults-only beach clubs and late-night shows) are kept in this list but left off the website, which is for parents of children aged 0 to 17.
+"For" (optional) marks a venue as especially popular for boys' or girls' parties; venues without it suit both. "Ages" is the suggested age range for children, based on the venue type and its reviews. It is a guide for parents, not a rule set by the venue. Venues marked "18+" (nightclubs, bars, adults-only beach clubs and late-night shows) are kept in this list but left off the website, which is for parents of children aged 0 to 17.
 
 
 ## Birthday
@@ -52,6 +52,7 @@ Play areas, amusement parks, karting, escape rooms and party venues.
 - Website: None found
 - Area: Mar Takla, Hazmieh
 - Ages: 2–12
+- For: Girls
 - Rating: 4.2 (20 reviews) | Phone: +961 71 777 613
 - Info:
   1. Private venue for kids' birthdays and private events
@@ -196,6 +197,7 @@ Play areas, amusement parks, karting, escape rooms and party venues.
 - Website: [rpmlebanon.com](https://rpmlebanon.com/)
 - Area: Mtein, on the Aintoura-Zahle road
 - Ages: 7–17
+- For: Boys
 - Rating: 4.6 (894 reviews) | Phone: +961 3 338 884 | Saturday: 2:00–10:00 PM
 - Info:
   1. Outdoor karting track in the mountains at over 1,100 m, with views
@@ -208,6 +210,7 @@ Play areas, amusement parks, karting, escape rooms and party venues.
 - Website: [pitstopkarting.com](https://www.pitstopkarting.com/)
 - Area: Zouk Mosbeh, near Dream Park
 - Ages: 7–17
+- For: Boys
 - Rating: 4.2 (777 reviews) | Phone: +961 81 219 333 | Saturday: 2:00–11:00 PM
 - Info:
   1. Wide, well-designed karting track
@@ -220,6 +223,7 @@ Play areas, amusement parks, karting, escape rooms and party venues.
 - Website: [monteverdekarting.com](https://www.monteverdekarting.com/)
 - Area: Qortada, Metn hills
 - Ages: 8–17
+- For: Boys
 - Rating: 4.3 (396 reviews) | Phone: +961 3 303 290 | Saturday: 10:00 AM–11:00 PM
 - Info:
   1. Mountain karting track with views
@@ -232,6 +236,7 @@ Play areas, amusement parks, karting, escape rooms and party venues.
 - Website: [gtkartingclub.com](https://gtkartingclub.com/)
 - Area: Jouar El Houz, upper Metn
 - Ages: 6–17
+- For: Boys
 - Rating: 4.8 (276 reviews) | Phone: +961 81 101 019 | Saturday: 12:00–9:00 PM
 - Info:
   1. Kid- and family-friendly karting club
@@ -244,6 +249,7 @@ Play areas, amusement parks, karting, escape rooms and party venues.
 - Website: None found
 - Area: Aramoun, south of Beirut
 - Ages: 10–17
+- For: Boys
 - Rating: 4.2 (152 reviews) | Phone: +961 76 900 899 | Saturday: 12:00 PM–2:00 AM
 - Info:
   1. About $10 for 15 minutes in a small kart, $15 in a faster one, per a reviewer
@@ -352,6 +358,7 @@ Play areas, amusement parks, karting, escape rooms and party venues.
 - Website: None found
 - Area: The Village, Dbayeh
 - Ages: 1–10
+- For: Girls
 - Rating: 4.1 (96 reviews) | Phone: +961 70 111 096 | Saturday: 12:00–7:00 PM
 - Info:
   1. Soft play, Lego and other activities in one place
@@ -388,6 +395,7 @@ Play areas, amusement parks, karting, escape rooms and party venues.
 - Website: [xtrem-paintball.com](https://xtrem-paintball.com/)
 - Area: Jdeideh
 - Ages: 10–17
+- For: Boys
 - Rating: 4.1 (123 reviews) | Phone: +961 3 489 191 | Saturday: 10:00 AM–11:00 PM
 - Info:
   1. Outdoor paintball field; reservation required
@@ -400,6 +408,7 @@ Play areas, amusement parks, karting, escape rooms and party venues.
 - Instagram: [instagram.com/frenzy_fun_center](https://www.instagram.com/frenzy_fun_center/)
 - Area: Amchit bridge
 - Ages: 6–17
+- For: Boys
 - Rating: 4.4 (439 reviews) | Phone: +961 78 866 788 | Saturday: 11:00 AM–11:00 PM
 - Info:
   1. Laser tag arena with several game modes and score stats
@@ -424,6 +433,7 @@ Play areas, amusement parks, karting, escape rooms and party venues.
 - Website: [confettilebanon.com](https://confettilebanon.com/)
 - Area: Main street, facing Najat church (Metn)
 - Ages: 2–12
+- For: Girls
 - Rating: 5.0 (38 reviews) | Phone: +961 3 232 406 | Saturday: 8:00 AM–8:00 PM
 - Info:
   1. Indoor party venue with an outdoor space

@@ -37,10 +37,11 @@ group and where they are, and get a map and list of suitable places.
 
 ### Party for (boys, girls or both)
 
-Parents can choose Everyone, Boys, Girls or Boys & girls. A venue counts as suitable
-for both unless its entry in `data/lebanon_venues.md` has a `- For: Boys` or
-`- For: Girls` line. No venue in the list has one yet, so every choice currently
-shows all venues; add the line for venues that cater to one group.
+Parents can choose Everyone, Boys or Girls. Venues suit both unless their entry in
+`data/lebanon_venues.md` has a `- For: Boys` or `- For: Girls` line; those show only
+for that choice. Currently karting, paintball and laser tag are marked Boys, and the
+themed party venues Confetti, Talent Square and Villa 7/17 are marked Girls. These
+are a starting guess; edit the lines to change them.
 
 ### Ages
 

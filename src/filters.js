@@ -28,13 +28,13 @@ export function suitsAges(venue, groupIds) {
   return AGE_GROUPS.some((g) => groupIds.includes(g.id) && venue.minAge <= g.max && venue.maxAge >= g.min);
 }
 
-// Who a party is for. Venues default to "both"; a venue marked for boys or
-// girls only (the "- For:" line in the venue list) shows for that choice only.
+// Who a party is for. Venues default to "both" and show for every choice; a
+// venue marked for boys or girls (the "- For:" line in the venue list) shows
+// for that choice only.
 export const GENDERS = [
   { id: "", label: "Everyone", icon: "🎉" },
   { id: "boys", label: "Boys", icon: "👦" },
   { id: "girls", label: "Girls", icon: "👧" },
-  { id: "both", label: "Boys & girls", icon: "👫" },
 ];
 export function suitsGender(venue, gender) {
   const forWho = venue.gender ?? "both";

@@ -184,5 +184,7 @@ test("party-for filter: boys, girls or both", () => {
   assert.deepEqual([boys, girls, both].map((v) => suitsGender(v, "")), [true, true, true]);
   assert.deepEqual([boys, girls, both].map((v) => suitsGender(v, "boys")), [true, false, true]);
   assert.deepEqual([boys, girls, both].map((v) => suitsGender(v, "girls")), [false, true, true]);
-  assert.deepEqual([boys, girls, both].map((v) => suitsGender(v, "both")), [false, false, true]);
+  const { venues: list } = { venues: sampleVenues };
+  const n = (g) => list.filter((v) => suitsGender(v, g)).length;
+  assert.ok(n("boys") < list.length && n("girls") < list.length && n("boys") !== n("girls"), "boys and girls lists differ");
 });
