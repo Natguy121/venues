@@ -4,6 +4,30 @@ import { formatMoney, formatShortDate, formatDistance } from "../format.js";
 
 const MAX_DATE_CHIPS = 4;
 
+const TYPE_ICONS = {
+  "Kids' play area": "🛝",
+  "Trampoline park": "🤸",
+  Karting: "🏎️",
+  "Escape room": "🧩",
+  "Amusement park": "🎠",
+  "Paintball & laser tag": "🎯",
+  "Party venue": "🎈",
+  "Beach & pool resort": "🏖️",
+  "Lebanese restaurant": "🥙",
+  "Seafood restaurant": "🐟",
+  Café: "☕",
+  Restaurant: "🍽️",
+};
+export const typeIcon = (type) => TYPE_ICONS[type] ?? "🎉";
+
+/** "Ages 1–10", or "All ages" for 0–17. */
+export const agesLabel = (venue) =>
+  venue.minAge == null ? "" : venue.minAge === 0 && venue.maxAge === 17 ? "All ages" : `Ages ${venue.minAge}–${venue.maxAge}`;
+
+/** The venue's Google Maps page, which has its photos. */
+export const photosLink = (venue) =>
+  venue.mapsUrl ? `<a class="photos-link" href="${esc(venue.mapsUrl)}" target="_blank" rel="noopener">📷 See photos on Google Maps</a>` : "";
+
 /** "Kaslik, Jounieh" — or just "Beirut" when the area is the town itself or already names it. */
 export const placeLabel = (venue) =>
   venue.area === venue.city || venue.area.includes(venue.city) ? venue.area : `${venue.area}, ${venue.city}`;
@@ -50,10 +74,11 @@ function datesHTML(venue, criteria) {
 
 export function venueCardHTML(venue, criteria, { eager = false } = {}) {
   return `<article class="card" data-id="${esc(venue.id)}">
-    ${venue.images?.length ? galleryHTML(venue, { eager }) : ""}
+    ${venue.images?.length ? galleryHTML(venue, { eager }) : `<div class="card__banner card__banner--${esc(venue.category?.split(" ")[0].toLowerCase() ?? "other")}" aria-hidden="true">${typeIcon(venue.type)}</div>`}
     <div class="card__body">
       <div class="card__meta">
         <span class="badge">${esc(venue.type)}</span>
+        ${agesLabel(venue) ? `<span class="badge badge--age">${esc(agesLabel(venue))}</span>` : ""}
         ${ratingHTML(venue)}
       </div>
       <h3 class="card__title"><button type="button" class="card__link" data-open="${esc(venue.id)}">${esc(venue.name)}</button></h3>
@@ -62,7 +87,7 @@ export function venueCardHTML(venue, criteria, { eager = false } = {}) {
       }</p>
       ${priceHTML(venue)}
       ${datesHTML(venue, criteria)}
-      ${venue.kidFriendly ? `<p class="card__tag">👶 Kid-friendly</p>` : ""}
+      ${venue.images?.length ? "" : photosLink(venue)}
     </div>
   </article>`;
 }

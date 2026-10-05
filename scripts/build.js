@@ -23,7 +23,17 @@ const { outputFiles } = await build({
   minify: true,
   write: false,
 });
-const app = outputFiles[0].text;
+// Venue photos (photos/<id>/<file>) are embedded so the single file has them too.
+const MIME = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp" };
+let photoBytes = 0;
+const app = outputFiles[0].text.replace(/"(photos\/[^"]+\.(jpe?g|png|webp))"/gi, (_, path, ext) => {
+  const data = readFileSync(root + path);
+  photoBytes += data.length;
+  return `"data:${MIME[ext.toLowerCase()]};base64,${data.toString("base64")}"`;
+});
+if (photoBytes > 15 * 1024 * 1024) {
+  console.warn(`Warning: ${(photoBytes / 1048576).toFixed(1)} MB of photos embedded; resize them (e.g. 1200px wide) to keep the file fast on phones.`);
+}
 
 let html = read("index.html");
 let replaced = 0;

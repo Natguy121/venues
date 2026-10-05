@@ -8,19 +8,31 @@
 //   - Location: 33.888314, 35.476229 ([open in Google Maps](https://...))
 //   - Website: [glowkidsentertainment.com](https://...)      (or Facebook / Instagram / Online booking / "None found")
 //   - Area: Ain El Tineh, Beirut
+//   - Ages: 1–10                                                (or "18+")
 //   - Rating: 4.9 (86 reviews) | Price: $$ | Phone: +961 ... | Saturday: 10:00 AM–7:00 PM   (each part optional)
 //   - Info:
 //     1. ...
 //
 // under a "## Birthday", "## Parties" or "## Restaurants" heading. Coordinates
-// are each venue's own Google Maps pin and are used as given. The import fails
-// loudly on anything it can't parse, and prints the type and town it picked for
-// every venue so they can be checked.
-import { readFileSync, writeFileSync } from "node:fs";
+// are each venue's own Google Maps pin and are used as given. The site is for
+// parents of children aged 0–17, so venues marked "Ages: 18+" are left out.
+//
+// Photos: put image files in photos/<venue id>/ (jpg, jpeg, png or webp); they
+// are shown in file-name order. The import lists each venue's id.
+//
+// The import fails loudly on anything it can't parse, and prints the type, town
+// and ages it picked for every venue so they can be checked.
+import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const SOURCE = fileURLToPath(new URL("../data/lebanon_venues.md", import.meta.url));
 const OUT = fileURLToPath(new URL("../src/data/venues.js", import.meta.url));
+const PHOTOS = fileURLToPath(new URL("../photos/", import.meta.url));
+
+// What parents are looking for, by venue type (the list's own sections are
+// broader: its "Parties" section is mostly nightlife, left out as 18+).
+const OCCASION_BY_TYPE = { "Beach & pool resort": "Pools & beaches" };
+const OCCASION_BY_SECTION = { Birthday: "Play & parties", Parties: "Pools & beaches", Restaurants: "Family meals" };
 
 // Town and region from the "Area" text. First match wins, so specific places
 // come before the "Beirut" catch-all ("Hazmieh area, east of Beirut").
@@ -70,10 +82,10 @@ const TYPE_RULES = {
     ["any", /./, "Party venue"],
   ],
   Parties: [
-    ["name", /beach|resort/i, "Beach club & resort"],
+    ["name", /beach|resort/i, "Beach & pool resort"],
     ["name", /\bbar\b|pub/i, "Bar & pub"],
     ["info", /rooftop/i, "Rooftop"],
-    ["info", /beach|resort/i, "Beach club & resort"],
+    ["info", /beach|resort/i, "Beach & pool resort"],
     ["info", /live (acts|shows)|cabaret/i, "Live music & shows"],
     ["any", /club|nightclub|DJ|techno/i, "Nightclub"],
     ["any", /./, "Bar & pub"],
@@ -121,6 +133,11 @@ function parse(markdown) {
       const link = m[2].match(/^\[([^\]]+)\]\(([^)]+)\)$/);
       if (!link) fail(entry, `can't read link "${m[2]}"`);
       entry.links.push({ label: LINK_LABELS[m[1]], text: link[1], url: link[2] });
+    } else if ((m = line.match(/^- Ages:\s*(.+)$/))) {
+      const ages = m[1].trim().match(/^(\d+)\s*[–-]\s*(\d+)$/);
+      if (/^18\+$/.test(m[1].trim())) entry.adultsOnly = true;
+      else if (ages && Number(ages[1]) <= Number(ages[2]) && Number(ages[2]) <= 17) [entry.minAge, entry.maxAge] = [Number(ages[1]), Number(ages[2])];
+      else fail(entry, `can't read ages "${m[1]}" (use e.g. "4–12" up to 17, or "18+")`);
     } else if ((m = line.match(/^- Area:\s*(.+)$/))) {
       entry.address = m[1].trim();
     } else if ((m = line.match(/^- Rating:\s*(.+)$/))) {
@@ -149,8 +166,11 @@ function typeFor(entry) {
 }
 
 const entries = parse(readFileSync(SOURCE, "utf8"));
+for (const entry of entries) if (entry.minAge == null && !entry.adultsOnly) fail(entry, "missing Ages");
+const adults = entries.filter((e) => e.adultsOnly);
 const ids = new Set();
-const venues = entries.map((entry) => {
+const photoExt = /\.(jpe?g|png|webp)$/i;
+const venues = entries.filter((e) => !e.adultsOnly).map((entry) => {
   if (entry.lat == null) fail(entry, "missing Location");
   if (!entry.address) fail(entry, "missing Area");
   if (entry.rating == null) fail(entry, "missing Rating");
@@ -163,12 +183,15 @@ const venues = entries.map((entry) => {
   if (ids.has(id)) fail(entry, `duplicate id ${id}`);
   ids.add(id);
 
+  const type = typeFor(entry);
   const venue = {
     id,
     source: entry.number,
     name: entry.name,
-    category: entry.category,
-    type: typeFor(entry),
+    category: OCCASION_BY_TYPE[type] ?? OCCASION_BY_SECTION[entry.category],
+    type,
+    minAge: entry.minAge,
+    maxAge: entry.maxAge,
     city: town.city,
     region: town.region,
     area: entry.address,
@@ -184,6 +207,11 @@ const venues = entries.map((entry) => {
   if (entry.saturdayHours) venue.saturdayHours = entry.saturdayHours;
   if (entry.links.length) venue.links = entry.links;
   venue.highlights = entry.highlights;
+  const dir = PHOTOS + id;
+  if (existsSync(dir)) {
+    const files = readdirSync(dir).filter((f) => photoExt.test(f)).sort();
+    if (files.length) venue.images = files.map((f) => `photos/${id}/${f}`);
+  }
   return venue;
 });
 
@@ -197,10 +225,14 @@ writeFileSync(
 // dates aren't known yet, so those fields are left out; the site shows them as
 // "not listed" until added. Optional fields the site also supports:
 // pricePerPerson, minGuests, maxGuests, availability (sorted "YYYY-MM-DD"
-// dates), kidFriendly, description, includes, images.
+// dates), description, includes. Photos come from photos/<id>/.
 export const venues = ${JSON.stringify(venues, null, 2)};
 `,
 );
 
-console.log(`Imported ${venues.length} venues.\n`);
-for (const v of venues) console.log(`${String(v.source).padStart(3)}  ${v.type.padEnd(22)} ${v.city.padEnd(14)} ${v.name}`);
+console.log(`Imported ${venues.length} venues; left out ${adults.length} marked 18+.\n`);
+for (const v of venues) {
+  const photos = v.images ? ` (${v.images.length} photos)` : "";
+  console.log(`${String(v.source).padStart(3)}  ${`${v.minAge}–${v.maxAge}`.padEnd(6)} ${v.type.padEnd(20)} ${v.city.padEnd(13)} ${v.name} [${v.id}]${photos}`);
+}
+console.log(`\nLeft out (18+): ${adults.map((e) => `#${e.number} ${e.name}`).join(", ")}`);

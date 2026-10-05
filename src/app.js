@@ -1,7 +1,7 @@
 import { listVenues } from "./api.js";
 import { config } from "./config.js";
 import { todayISO } from "./dates.js";
-import { searchVenues, defaultCriteria, distinct, dataAvailable, SORTS } from "./filters.js";
+import { searchVenues, defaultCriteria, distinct, dataAvailable, SORTS, AGE_GROUPS } from "./filters.js";
 import { formatMoney } from "./format.js";
 import { venueCardHTML } from "./components/card.js";
 import { enhanceGalleries } from "./components/gallery.js";
@@ -35,6 +35,7 @@ function readURL() {
   return {
     ...defaultCriteria(),
     query: p.get("q") ?? "",
+    ages: (p.get("ages") ?? "").split(",").filter((id) => AGE_GROUPS.some((g) => g.id === id)),
     category: p.get("occasion") ?? "",
     region: p.get("region") ?? "",
     city: p.get("city") ?? "",
@@ -51,6 +52,7 @@ function readURL() {
 function writeURL() {
   const p = new URLSearchParams();
   if (criteria.query) p.set("q", criteria.query);
+  if (criteria.ages.length) p.set("ages", criteria.ages.join(","));
   if (criteria.category) p.set("occasion", criteria.category);
   if (criteria.region) p.set("region", criteria.region);
   if (criteria.city) p.set("city", criteria.city);
@@ -85,7 +87,16 @@ function fillTypes(category) {
     .join("");
 }
 
+// The age chips and location controls live in the hero, outside the <form>
+// element (the selects join it via their form="filters" attribute).
+const ageBoxes = () => [...document.querySelectorAll('#age-chips [name="ages"]')];
+
 function buildForm() {
+  $("#age-chips").innerHTML = AGE_GROUPS.map(
+    (g) => `<label class="age-chip"><input type="checkbox" name="ages" value="${g.id}">
+      <span><b aria-hidden="true">${g.icon}</b> ${esc(g.label)} <small>${g.ages}</small></span></label>`,
+  ).join("");
+  if (!info.ages) $("#age-chips").closest("fieldset").hidden = true;
   const categories = distinct(venues, "category");
   $("#categories").innerHTML = ["", ...categories]
     .map((c) => `<label class="segmented__option"><input type="radio" name="category" value="${esc(c)}"${c ? "" : " checked"}><span>${c ? esc(c) : "All"}</span></label>`)
@@ -124,6 +135,7 @@ function buildForm() {
 
 function syncFormFromCriteria() {
   $("#q").value = criteria.query;
+  ageBoxes().forEach((box) => (box.checked = criteria.ages.includes(box.value)));
   const radio = form.querySelector(`[name="category"][value="${CSS.escape(criteria.category)}"]`);
   (radio ?? form.querySelector('[name="category"][value=""]')).checked = true;
   fillTypes(radio ? criteria.category : "");
@@ -145,6 +157,7 @@ function readCriteriaFromForm() {
   const guests = Number(form.guests.value);
   criteria = {
     query: $("#q").value,
+    ages: ageBoxes().filter((box) => box.checked).map((box) => box.value),
     category: form.querySelector('[name="category"]:checked')?.value ?? "",
     region: form.region.value,
     city: form.city.value,
@@ -160,10 +173,11 @@ function readCriteriaFromForm() {
 
 function updateControls() {
   if (info.price) $("#max-price-label").textContent = formatMoney(Number(form.maxPrice.value));
-  form.radius.disabled = !origin;
+  form.radius.hidden = !origin;
   form.sort.querySelector('[value="distance"]').disabled = !origin;
   const active = [
     criteria.query,
+    criteria.ages.length,
     criteria.category,
     criteria.region,
     criteria.city,
@@ -180,16 +194,16 @@ function updateControls() {
 // ---- Rendering -------------------------------------------------------------
 
 const NOUNS = {
-  Birthday: ["birthday venue", "birthday venues"],
-  Parties: ["party venue", "party venues"],
-  Restaurants: ["restaurant", "restaurants"],
+  "Play & parties": ["place to play", "places to play"],
+  "Pools & beaches": ["pool or beach", "pools and beaches"],
+  "Family meals": ["family restaurant", "family restaurants"],
 };
 
 function render() {
   results = searchVenues(venues, criteria, { today, origin, unit: config.distanceUnit });
   const count = results.length;
   const place = criteria.city || criteria.region;
-  const [one, many] = NOUNS[criteria.category] ?? ["venue", "venues"];
+  const [one, many] = NOUNS[criteria.category] ?? ["place", "places"];
   $("#results-title").textContent = `${count} ${count === 1 ? one : many}${
     place ? ` in ${place}` : origin && criteria.radius ? " near you" : ""
   }`;
@@ -257,7 +271,7 @@ function locate() {
       fillTowns("");
       form.sort.value = "distance";
       if (!form.radius.value) form.radius.value = String(config.radiusOptions.at(-1));
-      form.radius.disabled = false;
+      form.radius.hidden = false;
       update();
     },
     () => {
@@ -274,7 +288,7 @@ function bindEvents() {
   form.sort.addEventListener("input", update); // lives outside the <form> element
   form.addEventListener("submit", (e) => e.preventDefault());
   $("#quick-search").addEventListener("submit", (e) => e.preventDefault());
-  $("#q").addEventListener("input", update);
+  $("#hero").addEventListener("input", update); // age chips, location, search
   $("#locate").addEventListener("click", locate);
   $("#clear").addEventListener("click", clearFilters);
   $("#empty-clear").addEventListener("click", clearFilters);
@@ -289,7 +303,7 @@ function bindEvents() {
 
   // Clicking anywhere on a card (except the photo controls) opens its details.
   grid.addEventListener("click", (event) => {
-    if (event.target.closest(".gallery__nav")) return;
+    if (event.target.closest(".gallery__nav, a")) return;
     const card = event.target.closest(".card");
     if (card) openVenue(card.dataset.id);
   });

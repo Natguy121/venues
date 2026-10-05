@@ -15,17 +15,38 @@
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="./">🎂 PartySpot</a>
-      <p class="tagline">Find the perfect place to celebrate</p>
+      <a class="brand" href="./">🎈 PartySpot</a>
+      <p class="tagline">Kids' parties and family days out in Lebanon</p>
     </header>
 
-    <section class="hero">
-      <h1>Places to celebrate in Lebanon.</h1>
-      <p>100 places for birthdays, parties and dinners, with Google ratings, opening hours and phone numbers.</p>
+    <section class="hero" id="hero">
+      <h1>Find the perfect party spot for your kids 🎉</h1>
+      <p>Play areas, trampoline parks, karting, escape rooms, pools and family restaurants across Lebanon, for children from 0 to 17.</p>
+
+      <fieldset class="hero__group">
+        <legend>How old is your child?</legend>
+        <div class="age-chips" id="age-chips"></div>
+      </fieldset>
+
+      <fieldset class="hero__group">
+        <legend>Where?</legend>
+        <div class="hero__where">
+          <label class="visually-hidden" for="region">Region</label>
+          <select id="region" name="region" form="filters"><option value="">All of Lebanon</option></select>
+          <label class="visually-hidden" for="city">Town</label>
+          <select id="city" name="city" form="filters"><option value="">All towns</option></select>
+          <button type="button" class="btn btn--light" id="locate">📍 Near me</button>
+          <label class="visually-hidden" for="radius">Distance from you</label>
+          <select id="radius" name="radius" form="filters" hidden>
+            <option value="">Any distance</option>
+          </select>
+        </div>
+        <p class="hero__hint" id="location-status" aria-live="polite"></p>
+      </fieldset>
+
       <form class="hero__search" id="quick-search" role="search">
         <label class="visually-hidden" for="q">Search venues</label>
-        <input id="q" name="query" type="search" placeholder="Search: trampoline, karting, Batroun, seafood…" autocomplete="off">
-        <button type="button" class="btn btn--light" id="locate">📍 Near me</button>
+        <input id="q" name="query" type="search" placeholder="Search: trampoline, karting, Batroun, pizza…" autocomplete="off">
       </form>
     </section>
 
@@ -44,24 +65,6 @@
           <div class="segmented" id="categories" role="radiogroup" aria-label="Occasion"></div>
         </fieldset>
 
-        <fieldset class="filters__group">
-          <legend>Location</legend>
-          <label class="field">
-            <span>Region</span>
-            <select name="region"><option value="">All of Lebanon</option></select>
-          </label>
-          <label class="field">
-            <span>Town</span>
-            <select name="city"><option value="">All towns</option></select>
-          </label>
-          <label class="field">
-            <span>Distance from you</span>
-            <select name="radius" disabled>
-              <option value="">Any distance</option>
-            </select>
-          </label>
-          <p class="hint" id="location-status">Use “Near me” to filter by distance.</p>
-        </fieldset>
 
         <fieldset class="filters__group">
           <legend>Your party</legend>

@@ -12,7 +12,24 @@ export const SORTS = {
   distance: "Nearest first",
 };
 
+// Age groups parents pick from; a venue matches a group when its suggested
+// age range overlaps it.
+export const AGE_GROUPS = [
+  { id: "0-3", label: "Babies & toddlers", ages: "0–3", min: 0, max: 3, icon: "👶" },
+  { id: "4-6", label: "Little kids", ages: "4–6", min: 4, max: 6, icon: "🧸" },
+  { id: "7-12", label: "Kids", ages: "7–12", min: 7, max: 12, icon: "🧒" },
+  { id: "13-17", label: "Teens", ages: "13–17", min: 13, max: 17, icon: "🧑" },
+];
+
+/** Does a venue's suggested age range overlap any of the chosen age groups? */
+export function suitsAges(venue, groupIds) {
+  if (!groupIds.length) return true;
+  if (venue.minAge == null) return false;
+  return AGE_GROUPS.some((g) => groupIds.includes(g.id) && venue.minAge <= g.max && venue.maxAge >= g.min);
+}
+
 export const defaultCriteria = () => ({
+  ages: [],
   query: "",
   category: "",
   region: "",
@@ -39,6 +56,7 @@ export function dataAvailable(venues) {
     kidFriendly: venues.some((v) => v.kidFriendly != null),
     rating: venues.some((v) => v.rating != null),
     reviews: venues.some((v) => v.reviews != null),
+    ages: venues.some((v) => v.minAge != null),
   };
 }
 
@@ -71,6 +89,7 @@ export function searchVenues(venues, criteria, { today, origin = null, unit = "m
         .some((s) => s?.toLowerCase().includes(query)))
         return false;
       if (c.category && v.category !== c.category) return false;
+      if (!suitsAges(v, c.ages)) return false;
       if (c.region && v.region !== c.region) return false;
       if (c.city && v.city !== c.city) return false;
       if (c.types.length && !c.types.includes(v.type)) return false;
