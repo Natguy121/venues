@@ -1,6 +1,6 @@
 import { esc } from "./dom.js";
 import { formatMoney } from "../format.js";
-import { placeLabel } from "./card.js";
+import { placeLabel, ratingHTML } from "./card.js";
 
 // Overview map of the current results, built on Leaflet (vendor/leaflet,
 // loaded as a classic script that defines the global `L`). Nearby venues are
@@ -62,6 +62,7 @@ export function createVenueMap(container, { onSelect }) {
       ${venue.images?.length ? `<img src="${esc(venue.images[0])}" alt="" onerror="this.remove()">` : ""}
       <strong>${esc(venue.name)}</strong>
       <span>${esc(venue.type)} · ${esc(placeLabel(venue))}</span>
+      ${ratingHTML(venue)}
       ${venue.pricePerPerson != null ? `<span><b>${esc(formatMoney(venue.pricePerPerson))}</b> per person</span>` : ""}
       <button type="button" class="btn btn--primary btn--small" data-map-open="${esc(venue.id)}">View details</button>
     </div>`;

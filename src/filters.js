@@ -8,11 +8,13 @@ export const SORTS = {
   "price-asc": "Price: low to high",
   "price-desc": "Price: high to low",
   soonest: "Soonest available",
+  reviews: "Most reviewed",
   distance: "Nearest first",
 };
 
 export const defaultCriteria = () => ({
   query: "",
+  category: "",
   region: "",
   city: "",
   types: [],
@@ -36,6 +38,7 @@ export function dataAvailable(venues) {
     dates: venues.some((v) => Array.isArray(v.availability)),
     kidFriendly: venues.some((v) => v.kidFriendly != null),
     rating: venues.some((v) => v.rating != null),
+    reviews: venues.some((v) => v.reviews != null),
   };
 }
 
@@ -64,8 +67,10 @@ export function searchVenues(venues, criteria, { today, origin = null, unit = "m
       distance: origin ? distanceIn(unit, origin, venue) : null,
     }))
     .filter((v) => {
-      if (query && ![v.name, v.city, v.region, v.area, v.address, v.type].some((s) => s.toLowerCase().includes(query)))
+      if (query && ![v.name, v.city, v.region, v.area, v.address, v.type, v.category, ...(v.highlights ?? [])]
+        .some((s) => s?.toLowerCase().includes(query)))
         return false;
+      if (c.category && v.category !== c.category) return false;
       if (c.region && v.region !== c.region) return false;
       if (c.city && v.city !== c.city) return false;
       if (c.types.length && !c.types.includes(v.type)) return false;
@@ -86,10 +91,12 @@ export function searchVenues(venues, criteria, { today, origin = null, unit = "m
     return compare(x, y);
   };
   const comparators = {
-    recommended: by((v) => v.rating, (x, y) => y - x),
+    // Equal ratings: more reviews first.
+    recommended: (a, b) => by((v) => v.rating, (x, y) => y - x)(a, b) || (b.reviews ?? 0) - (a.reviews ?? 0),
     "price-asc": by((v) => v.pricePerPerson, (x, y) => x - y),
     "price-desc": by((v) => v.pricePerPerson, (x, y) => y - x),
     soonest: by((v) => v.upcomingDates?.[0], (x, y) => x.localeCompare(y)),
+    reviews: by((v) => v.reviews, (x, y) => y - x),
     distance: by((v) => v.distance, (x, y) => x - y),
   };
   return results.sort((a, b) => comparators[sort](a, b) || a.name.localeCompare(b.name));

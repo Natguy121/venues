@@ -4,18 +4,37 @@ import { formatMoney, formatShortDate, formatDistance } from "../format.js";
 
 const MAX_DATE_CHIPS = 4;
 
-/** "Kaslik, Jounieh" — or just "Beirut" when the area is the town itself. */
-export const placeLabel = (venue) => (venue.area === venue.city ? venue.city : `${venue.area}, ${venue.city}`);
+/** "Kaslik, Jounieh" — or just "Beirut" when the area is the town itself or already names it. */
+export const placeLabel = (venue) =>
+  venue.area === venue.city || venue.area.includes(venue.city) ? venue.area : `${venue.area}, ${venue.city}`;
+
+/** Google's price level as $–$$$$, with the unused signs dimmed. */
+export const priceLevelHTML = (level) =>
+  `<span class="price-level" aria-label="Price level ${level} of 4">${"$".repeat(level)}<span aria-hidden="true">${"$".repeat(4 - level)}</span></span>`;
+
+/** "★ 4.9 · 86 reviews" */
+export const ratingHTML = (venue) =>
+  venue.rating == null
+    ? ""
+    : `<span class="rating" aria-label="Rated ${venue.rating} out of 5${venue.reviews ? ` from ${venue.reviews} reviews` : ""}">★ ${venue.rating.toFixed(1)}${
+        venue.reviews ? ` <span class="muted">(${venue.reviews.toLocaleString("en-US")})</span>` : ""
+      }</span>`;
 
 function priceHTML(venue) {
-  if (venue.pricePerPerson == null) return `<p class="card__price muted">Price on request</p>`;
+  if (venue.pricePerPerson == null) {
+    return `<p class="card__price muted">${venue.priceLevel ? `${priceLevelHTML(venue.priceLevel)} · ` : ""}Price on request</p>`;
+  }
   const guests = venue.minGuests != null ? ` <span class="muted">· ${venue.minGuests}–${venue.maxGuests} guests</span>` : "";
   return `<p class="card__price"><strong>${esc(formatMoney(venue.pricePerPerson))}</strong> per person${guests}</p>`;
 }
 
 function datesHTML(venue, criteria) {
   const { upcomingDates } = venue;
-  if (upcomingDates === null) return `<p class="card__label">Contact the venue for available dates</p>`;
+  if (upcomingDates === null) {
+    return venue.saturdayHours
+      ? `<p class="card__label">Saturday ${esc(venue.saturdayHours)} · call for dates</p>`
+      : `<p class="card__label">Contact the venue for available dates</p>`;
+  }
   const chips = criteria.date
     ? `<span class="chip chip--match">✓ ${esc(formatShortDate(criteria.date))}</span>`
     : upcomingDates
@@ -35,7 +54,7 @@ export function venueCardHTML(venue, criteria, { eager = false } = {}) {
     <div class="card__body">
       <div class="card__meta">
         <span class="badge">${esc(venue.type)}</span>
-        ${venue.rating != null ? `<span class="rating" aria-label="Rated ${venue.rating} out of 5">★ ${venue.rating.toFixed(1)}</span>` : ""}
+        ${ratingHTML(venue)}
       </div>
       <h3 class="card__title"><button type="button" class="card__link" data-open="${esc(venue.id)}">${esc(venue.name)}</button></h3>
       <p class="card__location">📍 ${esc(placeLabel(venue))}${

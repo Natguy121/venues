@@ -35,6 +35,7 @@ function readURL() {
   return {
     ...defaultCriteria(),
     query: p.get("q") ?? "",
+    category: p.get("occasion") ?? "",
     region: p.get("region") ?? "",
     city: p.get("city") ?? "",
     types: p.get("types") ? p.get("types").split(",") : [],
@@ -50,6 +51,7 @@ function readURL() {
 function writeURL() {
   const p = new URLSearchParams();
   if (criteria.query) p.set("q", criteria.query);
+  if (criteria.category) p.set("occasion", criteria.category);
   if (criteria.region) p.set("region", criteria.region);
   if (criteria.city) p.set("city", criteria.city);
   if (criteria.types.length) p.set("types", criteria.types.join(","));
@@ -75,7 +77,20 @@ function fillTowns(region) {
   form.city.value = towns.includes(current) ? current : "";
 }
 
+/** Venue-type pills, limited to the chosen occasion. Keeps checked types that remain. */
+function fillTypes(category) {
+  const checked = new Set([...form.querySelectorAll('[name="types"]:checked')].map((box) => box.value));
+  $("#types").innerHTML = distinct(category ? venues.filter((v) => v.category === category) : venues, "type")
+    .map((t) => `<label class="pill"><input type="checkbox" name="types" value="${esc(t)}"${checked.has(t) ? " checked" : ""}><span>${esc(t)}</span></label>`)
+    .join("");
+}
+
 function buildForm() {
+  const categories = distinct(venues, "category");
+  $("#categories").innerHTML = ["", ...categories]
+    .map((c) => `<label class="segmented__option"><input type="radio" name="category" value="${esc(c)}"${c ? "" : " checked"}><span>${c ? esc(c) : "All"}</span></label>`)
+    .join("");
+  if (categories.length < 2) $("#categories").closest("fieldset").hidden = true;
   form.region.insertAdjacentHTML(
     "beforeend",
     distinct(venues, "region").map((r) => `<option>${esc(r)}</option>`).join(""),
@@ -85,16 +100,14 @@ function buildForm() {
     "beforeend",
     config.radiusOptions.map((r) => `<option value="${r}">Within ${r} ${config.distanceUnit}</option>`).join(""),
   );
-  $("#types").innerHTML = distinct(venues, "type")
-    .map((t) => `<label class="pill"><input type="checkbox" name="types" value="${esc(t)}"><span>${esc(t)}</span></label>`)
-    .join("");
+  fillTypes("");
   // Hide filters and sorts for details no venue lists yet.
   form.querySelectorAll("[data-needs]").forEach((el) => (el.hidden = !info[el.dataset.needs]));
   form.querySelectorAll("fieldset").forEach((set) => {
     const fields = [...set.children].filter((el) => el.tagName !== "LEGEND");
     if (fields.every((el) => el.hidden)) set.hidden = true;
   });
-  const sortNeeds = { "price-asc": "price", "price-desc": "price", soonest: "dates" };
+  const sortNeeds = { "price-asc": "price", "price-desc": "price", soonest: "dates", reviews: "reviews" };
   form.sort.innerHTML = Object.entries(SORTS)
     .filter(([value]) => !sortNeeds[value] || info[sortNeeds[value]])
     .map(([value, label]) => `<option value="${value}">${esc(value === "recommended" && !info.rating ? "Name A–Z" : label)}</option>`)
@@ -111,6 +124,9 @@ function buildForm() {
 
 function syncFormFromCriteria() {
   $("#q").value = criteria.query;
+  const radio = form.querySelector(`[name="category"][value="${CSS.escape(criteria.category)}"]`);
+  (radio ?? form.querySelector('[name="category"][value=""]')).checked = true;
+  fillTypes(radio ? criteria.category : "");
   form.region.value = criteria.region;
   fillTowns(form.region.value);
   form.city.value = criteria.city;
@@ -129,6 +145,7 @@ function readCriteriaFromForm() {
   const guests = Number(form.guests.value);
   criteria = {
     query: $("#q").value,
+    category: form.querySelector('[name="category"]:checked')?.value ?? "",
     region: form.region.value,
     city: form.city.value,
     types: [...form.querySelectorAll('[name="types"]:checked')].map((box) => box.value),
@@ -147,6 +164,7 @@ function updateControls() {
   form.sort.querySelector('[value="distance"]').disabled = !origin;
   const active = [
     criteria.query,
+    criteria.category,
     criteria.region,
     criteria.city,
     criteria.types.length,
@@ -161,11 +179,18 @@ function updateControls() {
 
 // ---- Rendering -------------------------------------------------------------
 
+const NOUNS = {
+  Birthday: ["birthday venue", "birthday venues"],
+  Parties: ["party venue", "party venues"],
+  Restaurants: ["restaurant", "restaurants"],
+};
+
 function render() {
   results = searchVenues(venues, criteria, { today, origin, unit: config.distanceUnit });
   const count = results.length;
   const place = criteria.city || criteria.region;
-  $("#results-title").textContent = `${count} ${count === 1 ? "venue" : "venues"}${
+  const [one, many] = NOUNS[criteria.category] ?? ["venue", "venues"];
+  $("#results-title").textContent = `${count} ${count === 1 ? one : many}${
     place ? ` in ${place}` : origin && criteria.radius ? " near you" : ""
   }`;
   $("#empty").hidden = count > 0;
@@ -192,6 +217,7 @@ function showMore() {
 
 function update(event) {
   if (event?.target === form.region) fillTowns(form.region.value);
+  if (event?.target.name === "category") fillTypes(event.target.value);
   shown = PAGE_SIZE;
   readCriteriaFromForm();
   updateControls();

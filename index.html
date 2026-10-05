@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PartySpot · Birthday venues</title>
-    <meta name="description" content="Find birthday party venues across Lebanon on a map, filtered by region, town and venue type.">
+    <meta name="description" content="100 places in Lebanon for birthdays, parties and restaurants, on a map with ratings, hours and phone numbers.">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎂</text></svg>">
     <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
     <link rel="stylesheet" href="vendor/leaflet.markercluster/MarkerCluster.css">
@@ -20,11 +20,11 @@
     </header>
 
     <section class="hero">
-      <h1>Birthday venues across Lebanon.</h1>
-      <p>Find a place to celebrate on the map, then filter by region, town and type of venue.</p>
+      <h1>Places to celebrate in Lebanon.</h1>
+      <p>100 places for birthdays, parties and dinners, with Google ratings, opening hours and phone numbers.</p>
       <form class="hero__search" id="quick-search" role="search">
         <label class="visually-hidden" for="q">Search venues</label>
-        <input id="q" name="query" type="search" placeholder="Search a venue, area or type: Hamra, Kaslik, sushi…" autocomplete="off">
+        <input id="q" name="query" type="search" placeholder="Search: trampoline, karting, Batroun, seafood…" autocomplete="off">
         <button type="button" class="btn btn--light" id="locate">📍 Near me</button>
       </form>
     </section>
@@ -39,6 +39,11 @@
       </button>
 
       <form class="filters" id="filters" aria-label="Filters">
+        <fieldset class="filters__group">
+          <legend>Occasion</legend>
+          <div class="segmented" id="categories" role="radiogroup" aria-label="Occasion"></div>
+        </fieldset>
+
         <fieldset class="filters__group">
           <legend>Location</legend>
           <label class="field">
@@ -111,7 +116,7 @@
     <dialog class="dialog" id="venue-dialog"></dialog>
 
     <footer class="site-footer">
-      <p>Map locations are approximate. Prices, dates and online booking are coming in a future version.</p>
+      <p>Ratings, hours and phone numbers from Google Maps (5 October 2026). Details change, so call before you go. Online booking is coming in a future version.</p>
     </footer>
   </body>
 </html>

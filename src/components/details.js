@@ -4,9 +4,21 @@ import { renderCalendar } from "./calendar.js";
 import { formatMoney, formatLongDate, formatDistance } from "../format.js";
 import { billableGuests, estimateTotal } from "../filters.js";
 import { config } from "../config.js";
+import { priceLevelHTML, ratingHTML } from "./card.js";
 
+// The venue's own Google Maps pin when known, otherwise a search by name.
 const mapsLink = (venue) =>
-  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${venue.name}, ${venue.address}, Lebanon`)}`;
+  venue.mapsUrl ?? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${venue.name}, ${venue.address}, Lebanon`)}`;
+
+function contactHTML(venue) {
+  const rows = [];
+  if (venue.phone) rows.push(`<li>📞 <a href="tel:${esc(venue.phone.replace(/\s+/g, ""))}">${esc(venue.phone)}</a></li>`);
+  if (venue.saturdayHours) rows.push(`<li>🕒 Saturday ${esc(venue.saturdayHours)}</li>`);
+  for (const link of venue.links ?? []) {
+    rows.push(`<li>🔗 ${esc(link.label)}: <a href="${esc(link.url)}" target="_blank" rel="noopener">${esc(link.text)}</a></li>`);
+  }
+  return rows.length ? `<ul class="contact">${rows.join("")}</ul>` : "";
+}
 
 /**
  * Fill the venue <dialog> and open it. Sections for details the venue doesn't
@@ -33,20 +45,26 @@ export function showVenueDetails(dialog, venue, { today, date, guests }) {
         <div class="details__main">
           <div class="card__meta">
             <span class="badge">${esc(venue.type)}</span>
-            ${venue.rating != null ? `<span class="rating">★ ${venue.rating.toFixed(1)}</span>` : ""}
+            ${ratingHTML(venue)}
+            ${venue.priceLevel ? priceLevelHTML(venue.priceLevel) : ""}
             ${venue.kidFriendly ? `<span class="badge badge--soft">👶 Kid-friendly</span>` : ""}
           </div>
           <h2 id="details-title">${esc(venue.name)}</h2>
           <p class="card__location">📍 ${esc(venue.address)}${
             venue.distance != null ? ` · about ${esc(formatDistance(venue.distance))} away` : ""
           }</p>
-          <p><a class="btn btn--ghost btn--small" href="${esc(mapsLink(venue))}" target="_blank" rel="noopener">Find it on Google Maps ↗</a></p>
+          <p><a class="btn btn--ghost btn--small" href="${esc(mapsLink(venue))}" target="_blank" rel="noopener">${venue.mapsUrl ? "Open in Google Maps" : "Find it on Google Maps"} ↗</a></p>
+          ${contactHTML(venue)}
           ${venue.description ? `<p>${esc(venue.description)}</p>` : ""}
+          ${venue.highlights?.length ? `<h3>What reviewers say</h3>
+          <ul class="includes">${venue.highlights.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>` : ""}
           ${venue.includes?.length ? `<h3>What's included</h3>
           <ul class="includes">${venue.includes.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>` : ""}
           ${hasCapacity && hasPrice ? `<p class="muted">Groups of ${venue.minGuests}–${venue.maxGuests}. Smaller groups are charged the ${venue.minGuests}-guest minimum.</p>` : ""}
-          ${missing.length ? `<p class="notice">This venue hasn't listed its ${missing.join(", ").replace(/, ([^,]*)$/, " or $1")} yet. Contact the venue directly to plan your party.</p>` : ""}
-          <p class="muted small">Map location is approximate (neighbourhood level).</p>
+          ${missing.length ? `<p class="notice">This venue hasn't listed its ${missing.join(", ").replace(/, ([^,]*)$/, " or $1")} here yet. ${venue.phone ? "Call" : "Contact"} the venue to plan your party.</p>` : ""}
+          <p class="muted small">${venue.mapsUrl
+            ? "Rating, hours and phone from Google Maps, 5 October 2026. Reviewer notes are a summary of Google reviews and prices they quote may be out of date."
+            : "Map location is approximate (neighbourhood level)."}</p>
         </div>
         <aside class="details__side">
           ${hasDates ? `<h3>Available dates</h3><div class="details__calendar"></div>` : ""}

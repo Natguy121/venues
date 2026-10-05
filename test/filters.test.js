@@ -97,7 +97,7 @@ test("estimated total charges at least the venue minimum", () => {
 // A venue from the real list: no price, capacity, dates, rating or photos.
 const bare = (overrides) => {
   const v = venue(overrides);
-  for (const key of ["pricePerPerson", "minGuests", "maxGuests", "availability", "rating", "kidFriendly"]) delete v[key];
+  for (const key of ["pricePerPerson", "minGuests", "maxGuests", "availability", "rating", "reviews", "kidFriendly"]) delete v[key];
   return v;
 };
 
@@ -124,8 +124,22 @@ test("venues missing the sorted-on value sort last", () => {
 });
 
 test("dataAvailable reports which optional details exist", () => {
-  assert.deepEqual(dataAvailable([bare({})]), { price: false, capacity: false, dates: false, kidFriendly: false, rating: false });
-  assert.deepEqual(dataAvailable([bare({}), venue({})]), { price: true, capacity: true, dates: true, kidFriendly: true, rating: true });
+  const none = { price: false, capacity: false, dates: false, kidFriendly: false, rating: false, reviews: false };
+  assert.deepEqual(dataAvailable([bare({})]), none);
+  assert.deepEqual(dataAvailable([bare({}), venue({ reviews: 10 })]), Object.fromEntries(Object.keys(none).map((k) => [k, true])));
+});
+
+test("filters by occasion, sorts by review count, searches reviewer notes", () => {
+  const list = [
+    venue({ id: "p", name: "Park", category: "Birthday", reviews: 50, highlights: ["Trampolines and slides"] }),
+    venue({ id: "q", name: "Quay", category: "Restaurants", reviews: 900, highlights: ["Fresh fish"] }),
+    venue({ id: "r", name: "Roof", category: "Parties" }),
+  ];
+  assert.deepEqual(ids(searchVenues(list, { category: "Birthday" }, opts)), ["p"]);
+  assert.deepEqual(ids(searchVenues(list, { sort: "reviews" }, opts)), ["q", "p", "r"]);
+  assert.deepEqual(ids(searchVenues(list, { query: "trampoline" }, opts)), ["p"]);
+  const tied = [venue({ id: "few", rating: 5, reviews: 3 }), venue({ id: "many", rating: 5, reviews: 30 })];
+  assert.deepEqual(ids(searchVenues(tied, {}, opts)), ["many", "few"], "equal ratings: more reviews first");
 });
 
 test("venue list is well formed", () => {
@@ -133,11 +147,16 @@ test("venue list is well formed", () => {
   for (const v of sampleVenues) {
     assert.ok(!seen.has(v.id), `duplicate id ${v.id}`);
     seen.add(v.id);
-    assert.ok(v.name && v.type && v.region && v.city && v.area && v.address, `${v.id} fields`);
+    assert.ok(v.name && v.type && v.category && v.region && v.city && v.area, `${v.id} fields`);
     assert.ok(!v.images, `${v.id} should have no photos`);
+    assert.ok(v.rating >= 1 && v.rating <= 5 && v.reviews > 0, `${v.id} rating`);
+    assert.match(v.mapsUrl, /^https:\/\/www\.google\.com\/maps\/.*query_place_id=/, `${v.id} maps link`);
+    assert.equal(v.highlights.length, 4, `${v.id} highlights`);
+    for (const link of v.links ?? []) assert.match(link.url, /^https?:\/\//, `${v.id} link`);
     // Roughly Lebanon's bounding box.
     assert.ok(v.lat > 33.0 && v.lat < 34.7 && v.lng > 35.0 && v.lng < 36.7, `${v.id} coordinates`);
   }
-  assert.equal(sampleVenues.length, 99, "100 entries minus one duplicate");
-  assert.equal(new Set(sampleVenues.map((v) => v.name.toLowerCase())).size, sampleVenues.length, "no duplicate names");
+  assert.equal(sampleVenues.length, 100);
+  assert.deepEqual(distinct(sampleVenues, "category"), ["Birthday", "Parties", "Restaurants"]);
+  assert.deepEqual(sampleVenues.map((v) => v.source), Array.from({ length: 100 }, (_, i) => i + 1), "entries 1–100 in order");
 });
