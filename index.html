@@ -3,26 +3,61 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PartySpot · Birthday venues</title>
-    <meta name="description" content="Find birthday party venues near you, compare price per person and see available dates.">
+    <title>Birthday Venues Lebanon</title>
+    <meta name="description" content="100 places in Lebanon for birthdays, parties and restaurants, on a map with ratings, hours and phone numbers.">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎂</text></svg>">
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+    <link rel="stylesheet" href="vendor/leaflet.markercluster/MarkerCluster.css">
     <link rel="stylesheet" href="styles.css">
+    <script src="vendor/leaflet/leaflet.js" defer></script>
+    <script src="vendor/leaflet.markercluster/leaflet.markercluster.js" defer></script>
+    <script src="vendor/markerclusterer/index.umd.js" defer></script>
     <script type="module" src="src/app.js"></script>
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="./">🎂 PartySpot</a>
-      <p class="tagline">Find the perfect place to celebrate</p>
+      <a class="brand" href="./">🎈 Birthday Venues Lebanon</a>
+      <p class="tagline">Kids' parties and family days out in Lebanon</p>
     </header>
 
-    <section class="hero">
-      <h1>Birthday venues, sorted.</h1>
-      <p>Filter by location, see which dates are free and what it costs per guest.</p>
+    <section class="hero" id="hero">
+      <h1>Find the perfect party spot for your kids 🎉</h1>
+      <p>Play areas, trampoline parks, karting, escape rooms, pools and family restaurants across Lebanon, for children from 0 to 17.</p>
+
+      <fieldset class="hero__group">
+        <legend>How old is your child?</legend>
+        <div class="age-chips" id="age-chips"></div>
+      </fieldset>
+
+      <fieldset class="hero__group">
+        <legend>Party for</legend>
+        <div class="age-chips" id="gender-chips"></div>
+      </fieldset>
+
+      <fieldset class="hero__group">
+        <legend>Where?</legend>
+        <div class="hero__where">
+          <label class="visually-hidden" for="region">Region</label>
+          <select id="region" name="region" form="filters"><option value="">All of Lebanon</option></select>
+          <label class="visually-hidden" for="city">Town</label>
+          <select id="city" name="city" form="filters"><option value="">All towns</option></select>
+          <button type="button" class="btn btn--light" id="locate">📍 Near me</button>
+          <label class="visually-hidden" for="radius">Distance from you</label>
+          <select id="radius" name="radius" form="filters" hidden>
+            <option value="">Any distance</option>
+          </select>
+        </div>
+        <p class="hero__hint" id="location-status" aria-live="polite"></p>
+      </fieldset>
+
       <form class="hero__search" id="quick-search" role="search">
         <label class="visually-hidden" for="q">Search venues</label>
-        <input id="q" name="query" type="search" placeholder="Search by name, neighborhood or type…" autocomplete="off">
-        <button type="button" class="btn btn--light" id="locate">📍 Near me</button>
+        <input id="q" name="query" type="search" placeholder="Search: trampoline, karting, Batroun, pizza…" autocomplete="off">
       </form>
+    </section>
+
+    <section class="map-section" aria-label="Map of venues">
+      <div class="venue-map" id="map"></div>
     </section>
 
     <main class="layout">
@@ -32,36 +67,27 @@
 
       <form class="filters" id="filters" aria-label="Filters">
         <fieldset class="filters__group">
-          <legend>Location</legend>
-          <label class="field">
-            <span>City</span>
-            <select name="city"><option value="">All cities</option></select>
-          </label>
-          <label class="field">
-            <span>Distance from you</span>
-            <select name="radius" disabled>
-              <option value="">Any distance</option>
-            </select>
-          </label>
-          <p class="hint" id="location-status">Use “Near me” to filter by distance.</p>
+          <legend>Occasion</legend>
+          <div class="segmented" id="categories" role="radiogroup" aria-label="Occasion"></div>
         </fieldset>
+
 
         <fieldset class="filters__group">
           <legend>Your party</legend>
-          <label class="field">
+          <label class="field" data-needs="dates">
             <span>Date</span>
             <input type="date" name="date">
           </label>
-          <label class="field">
+          <label class="field" data-needs="capacity">
             <span>Number of guests</span>
             <input type="number" name="guests" min="1" max="500" placeholder="Any" inputmode="numeric">
           </label>
-          <label class="check">
+          <label class="check" data-needs="kidFriendly">
             <input type="checkbox" name="kidFriendly"> Kid-friendly only
           </label>
         </fieldset>
 
-        <fieldset class="filters__group">
+        <fieldset class="filters__group" data-needs="price">
           <legend>Price per person</legend>
           <label class="field">
             <span>Up to <output id="max-price-label"></output></span>
@@ -86,6 +112,9 @@
           </label>
         </div>
         <div class="grid" id="grid"></div>
+        <div class="more" id="more" hidden>
+          <button type="button" class="btn btn--ghost" id="show-more"></button>
+        </div>
         <div class="empty" id="empty" hidden>
           <p>🎈 No venues match those filters.</p>
           <button type="button" class="btn btn--primary" id="empty-clear">Clear filters</button>
@@ -96,7 +125,7 @@
     <dialog class="dialog" id="venue-dialog"></dialog>
 
     <footer class="site-footer">
-      <p>Sample venues are fictional. Online booking is coming in a future version.</p>
+      <p>Ratings, hours and phone numbers from Google Maps (5 October 2026). Details change, so call before you go. Online booking is coming in a future version.</p>
     </footer>
   </body>
 </html>

@@ -18,16 +18,30 @@ function placeholder(label, index) {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
-export function galleryHTML(venue, { size = "card" } = {}) {
-  const slides = venue.images
-    .map(
-      (src, i) => `<img class="gallery__img" src="${esc(src)}" alt="${esc(venue.name)} photo ${i + 1} of ${venue.images.length}"
-        loading="${i === 0 ? "eager" : "lazy"}" data-index="${i}" draggable="false">`,
-    )
+/**
+ * Photo strip for a venue.
+ * @param venue   used for its name, and for `venue.images` (plain paths) when no photos are given
+ * @param options { size: "card" | "large", eager, photos: [{ src, credits: [{ name, url }] }] }
+ *                Photos with credits (e.g. from Google) show them on each slide.
+ */
+export function galleryHTML(venue, { size = "card", eager = size !== "card", photos } = {}) {
+  const list = photos ?? venue.images.map((src) => ({ src }));
+  const slides = list
+    .map((photo, i) => {
+      const credit = photo.credits?.length
+        ? `<figcaption class="gallery__credit">📷 ${photo.credits
+            .map((c) => (c.url ? `<a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.name)}</a>` : esc(c.name)))
+            .join(", ")}${photo.source ? ` · ${esc(photo.source)}` : ""}</figcaption>`
+        : "";
+      return `<figure class="gallery__slide">
+        <img class="gallery__img" src="${esc(photo.src)}" alt="${esc(venue.name)} photo ${i + 1} of ${list.length}"
+          loading="${i === 0 && eager ? "eager" : "lazy"}" data-index="${i}" draggable="false">${credit}
+      </figure>`;
+    })
     .join("");
-  const dots = venue.images.map((_, i) => `<span class="gallery__dot${i === 0 ? " is-active" : ""}"></span>`).join("");
+  const dots = list.map((_, i) => `<span class="gallery__dot${i === 0 ? " is-active" : ""}"></span>`).join("");
   const controls =
-    venue.images.length > 1
+    list.length > 1
       ? `<button type="button" class="gallery__nav gallery__nav--prev" aria-label="Previous photo">‹</button>
          <button type="button" class="gallery__nav gallery__nav--next" aria-label="Next photo">›</button>
          <div class="gallery__dots" aria-hidden="true">${dots}</div>`
