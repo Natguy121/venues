@@ -7,8 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test",
-    "generate": "node scripts/generate-venues.js",
-    "check:images": "node scripts/check-images.js"
+    "import": "node scripts/import-venues.js"
   },
   "engines": {
     "node": ">=20"

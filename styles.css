@@ -39,6 +39,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
 body {
   margin: 0;
@@ -310,3 +311,13 @@ img { display: block; max-width: 100%; }
 }
 .map-cluster span b { font-size: 0.9rem; }
 .more { display: flex; justify-content: center; margin-top: 1.5rem; }
+.map-pin--dot span {
+  width: 16px; height: 16px; padding: 0;
+  transform: translate(-50%, -50%);
+}
+.notice {
+  padding: 0.75rem 0.9rem; border-radius: 12px;
+  background: var(--surface-2); border-left: 4px solid var(--accent);
+}
+.small { font-size: 0.8rem; }
+.details__body--plain { padding-top: 3.25rem; }

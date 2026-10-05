@@ -1,5 +1,6 @@
 import { esc } from "./dom.js";
 import { formatMoney } from "../format.js";
+import { placeLabel } from "./card.js";
 
 // Overview map of the current results, built on Leaflet (vendor/leaflet,
 // loaded as a classic script that defines the global `L`). Nearby venues are
@@ -33,12 +34,16 @@ export function createVenueMap(container, { onSelect }) {
     L.markerClusterGroup
       ? L.markerClusterGroup({
           showCoverageOnHover: false,
-          maxClusterRadius: 55,
+          maxClusterRadius: 35,
           iconCreateFunction: (cluster) => {
-            const prices = cluster.getAllChildMarkers().map((m) => m.options.price);
+            const count = cluster.getChildCount();
+            const prices = cluster.getAllChildMarkers().map((m) => m.options.price).filter((p) => p != null);
+            const from = prices.length ? formatMoney(Math.min(...prices)) : null;
             return L.divIcon({
               className: "map-cluster",
-              html: `<span title="${cluster.getChildCount()} venues from ${esc(formatMoney(Math.min(...prices)))} per person"><b>${cluster.getChildCount()}</b> · ${esc(formatMoney(Math.min(...prices)))}+</span>`,
+              html: from
+                ? `<span title="${count} venues from ${esc(from)} per person"><b>${count}</b> · ${esc(from)}+</span>`
+                : `<span title="${count} venues"><b>${count}</b></span>`,
               iconSize: null,
             });
           },
@@ -54,10 +59,10 @@ export function createVenueMap(container, { onSelect }) {
 
   function popupHTML(venue) {
     return `<div class="map-popup">
-      <img src="${esc(venue.images[0])}" alt="" onerror="this.remove()">
+      ${venue.images?.length ? `<img src="${esc(venue.images[0])}" alt="" onerror="this.remove()">` : ""}
       <strong>${esc(venue.name)}</strong>
-      <span>${esc(venue.type)} · ${esc(venue.area)}, ${esc(venue.city)}</span>
-      <span><b>${esc(formatMoney(venue.pricePerPerson))}</b> per person</span>
+      <span>${esc(venue.type)} · ${esc(placeLabel(venue))}</span>
+      ${venue.pricePerPerson != null ? `<span><b>${esc(formatMoney(venue.pricePerPerson))}</b> per person</span>` : ""}
       <button type="button" class="btn btn--primary btn--small" data-map-open="${esc(venue.id)}">View details</button>
     </div>`;
   }
@@ -65,12 +70,14 @@ export function createVenueMap(container, { onSelect }) {
   function update(results, origin) {
     markers.clearLayers();
     for (const venue of results) {
+      // A price tag when the price is known, otherwise a plain dot.
+      const priced = venue.pricePerPerson != null;
       const icon = L.divIcon({
-        className: "map-pin",
-        html: `<span>${esc(formatMoney(venue.pricePerPerson))}</span>`,
+        className: priced ? "map-pin" : "map-pin map-pin--dot",
+        html: priced ? `<span>${esc(formatMoney(venue.pricePerPerson))}</span>` : "<span></span>",
         iconSize: null,
         iconAnchor: [0, 0],
-        popupAnchor: [0, -28],
+        popupAnchor: [0, priced ? -28 : -12],
       });
       L.marker([venue.lat, venue.lng], { icon, title: venue.name, alt: venue.name, price: venue.pricePerPerson })
         .bindPopup(popupHTML(venue), { minWidth: 200 })

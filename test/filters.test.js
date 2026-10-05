@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { searchVenues, estimateTotal, distinct } from "../src/filters.js";
+import { searchVenues, estimateTotal, distinct, dataAvailable } from "../src/filters.js";
 import { distanceKm } from "../src/geo.js";
 import { venues as sampleVenues } from "../src/data/venues.js";
 
@@ -94,23 +94,50 @@ test("estimated total charges at least the venue minimum", () => {
   assert.equal(estimateTotal(v, 12), 480);
 });
 
-test("sample data is well formed", () => {
+// A venue from the real list: no price, capacity, dates, rating or photos.
+const bare = (overrides) => {
+  const v = venue(overrides);
+  for (const key of ["pricePerPerson", "minGuests", "maxGuests", "availability", "rating", "kidFriendly"]) delete v[key];
+  return v;
+};
+
+test("venues without listed dates are shown, with upcomingDates null", () => {
+  const [result] = searchVenues([bare({ id: "x" })], {}, opts);
+  assert.equal(result.upcomingDates, null);
+});
+
+test("active filters only match venues whose value is known", () => {
+  const mixed = [...venues, bare({ id: "x", name: "Xray" })];
+  assert.ok(ids(searchVenues(mixed, {}, opts)).includes("x"));
+  for (const criteria of [{ maxPrice: 100 }, { guests: 10 }, { date: "2026-10-10" }, { kidFriendly: true }]) {
+    assert.ok(!ids(searchVenues(mixed, criteria, opts)).includes("x"), JSON.stringify(criteria));
+  }
+});
+
+test("venues missing the sorted-on value sort last", () => {
+  const mixed = [bare({ id: "x", name: "Aardvark" }), ...venues];
+  for (const sort of ["recommended", "price-asc", "price-desc", "soonest"]) {
+    assert.equal(searchVenues(mixed, { sort }, opts).at(-1).id, "x", sort);
+  }
+  const names = ids(searchVenues([bare({ id: "z", name: "Zed" }), bare({ id: "y", name: "Yak" })], {}, opts));
+  assert.deepEqual(names, ["y", "z"], "falls back to A–Z by name");
+});
+
+test("dataAvailable reports which optional details exist", () => {
+  assert.deepEqual(dataAvailable([bare({})]), { price: false, capacity: false, dates: false, kidFriendly: false, rating: false });
+  assert.deepEqual(dataAvailable([bare({}), venue({})]), { price: true, capacity: true, dates: true, kidFriendly: true, rating: true });
+});
+
+test("venue list is well formed", () => {
   const seen = new Set();
   for (const v of sampleVenues) {
     assert.ok(!seen.has(v.id), `duplicate id ${v.id}`);
     seen.add(v.id);
-    assert.ok(v.images.length >= 3, `${v.id} needs at least 3 photos`);
-    assert.equal(new Set(v.images).size, v.images.length, `${v.id} repeats a photo`);
-    assert.ok(v.images.every((url) => url.startsWith("https://")), `${v.id} photo URLs`);
-    assert.ok(v.region && v.city && v.area, `${v.id} location fields`);
+    assert.ok(v.name && v.type && v.region && v.city && v.area && v.address, `${v.id} fields`);
+    assert.ok(!v.images, `${v.id} should have no photos`);
     // Roughly Lebanon's bounding box.
     assert.ok(v.lat > 33.0 && v.lat < 34.7 && v.lng > 35.0 && v.lng < 36.7, `${v.id} coordinates`);
-    assert.ok(v.minGuests <= v.maxGuests, `${v.id} capacity`);
-    assert.ok(v.pricePerPerson > 0, `${v.id} price`);
-    assert.deepEqual(v.availability, [...v.availability].sort(), `${v.id} dates sorted`);
-    assert.ok(v.availability.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)), `${v.id} date format`);
   }
-  assert.ok(sampleVenues.length >= 100);
-  assert.ok(distinct(sampleVenues, "city").length >= 20);
-  assert.equal(distinct(sampleVenues, "region").length, 5);
+  assert.equal(sampleVenues.length, 99, "100 entries minus one duplicate");
+  assert.equal(new Set(sampleVenues.map((v) => v.name.toLowerCase())).size, sampleVenues.length, "no duplicate names");
 });

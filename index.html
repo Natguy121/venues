@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PartySpot · Birthday venues</title>
-    <meta name="description" content="Find birthday party venues across Lebanon, compare price per person and see available dates.">
+    <meta name="description" content="Find birthday party venues across Lebanon on a map, filtered by region, town and venue type.">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎂</text></svg>">
     <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
     <link rel="stylesheet" href="vendor/leaflet.markercluster/MarkerCluster.css">
@@ -21,10 +21,10 @@
 
     <section class="hero">
       <h1>Birthday venues across Lebanon.</h1>
-      <p>Filter by location, see which dates are free and what it costs per guest.</p>
+      <p>Find a place to celebrate on the map, then filter by region, town and type of venue.</p>
       <form class="hero__search" id="quick-search" role="search">
         <label class="visually-hidden" for="q">Search venues</label>
-        <input id="q" name="query" type="search" placeholder="Search Beirut, Jounieh, Byblos, bowling…" autocomplete="off">
+        <input id="q" name="query" type="search" placeholder="Search a venue, area or type: Hamra, Kaslik, sushi…" autocomplete="off">
         <button type="button" class="btn btn--light" id="locate">📍 Near me</button>
       </form>
     </section>
@@ -60,20 +60,20 @@
 
         <fieldset class="filters__group">
           <legend>Your party</legend>
-          <label class="field">
+          <label class="field" data-needs="dates">
             <span>Date</span>
             <input type="date" name="date">
           </label>
-          <label class="field">
+          <label class="field" data-needs="capacity">
             <span>Number of guests</span>
             <input type="number" name="guests" min="1" max="500" placeholder="Any" inputmode="numeric">
           </label>
-          <label class="check">
+          <label class="check" data-needs="kidFriendly">
             <input type="checkbox" name="kidFriendly"> Kid-friendly only
           </label>
         </fieldset>
 
-        <fieldset class="filters__group">
+        <fieldset class="filters__group" data-needs="price">
           <legend>Price per person</legend>
           <label class="field">
             <span>Up to <output id="max-price-label"></output></span>
@@ -111,7 +111,7 @@
     <dialog class="dialog" id="venue-dialog"></dialog>
 
     <footer class="site-footer">
-      <p>Sample venues are fictional. Online booking is coming in a future version.</p>
+      <p>Map locations are approximate. Prices, dates and online booking are coming in a future version.</p>
     </footer>
   </body>
 </html>

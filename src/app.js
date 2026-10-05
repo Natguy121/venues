@@ -1,7 +1,7 @@
 import { listVenues } from "./api.js";
 import { config } from "./config.js";
 import { todayISO } from "./dates.js";
-import { searchVenues, defaultCriteria, distinct, SORTS } from "./filters.js";
+import { searchVenues, defaultCriteria, distinct, dataAvailable, SORTS } from "./filters.js";
 import { formatMoney } from "./format.js";
 import { venueCardHTML } from "./components/card.js";
 import { enhanceGalleries } from "./components/gallery.js";
@@ -17,6 +17,7 @@ const today = todayISO();
 const PAGE_SIZE = 24;
 
 let venues = [];
+let info = {}; // which optional details the venues have; see dataAvailable()
 let results = [];
 let origin = null;
 let criteria = defaultCriteria();
@@ -87,14 +88,24 @@ function buildForm() {
   $("#types").innerHTML = distinct(venues, "type")
     .map((t) => `<label class="pill"><input type="checkbox" name="types" value="${esc(t)}"><span>${esc(t)}</span></label>`)
     .join("");
+  // Hide filters and sorts for details no venue lists yet.
+  form.querySelectorAll("[data-needs]").forEach((el) => (el.hidden = !info[el.dataset.needs]));
+  form.querySelectorAll("fieldset").forEach((set) => {
+    const fields = [...set.children].filter((el) => el.tagName !== "LEGEND");
+    if (fields.every((el) => el.hidden)) set.hidden = true;
+  });
+  const sortNeeds = { "price-asc": "price", "price-desc": "price", soonest: "dates" };
   form.sort.innerHTML = Object.entries(SORTS)
-    .map(([value, label]) => `<option value="${value}">${esc(label)}</option>`)
+    .filter(([value]) => !sortNeeds[value] || info[sortNeeds[value]])
+    .map(([value, label]) => `<option value="${value}">${esc(value === "recommended" && !info.rating ? "Name A–Z" : label)}</option>`)
     .join("");
 
-  const prices = venues.map((v) => v.pricePerPerson);
-  priceCeiling = Math.max(...prices);
-  form.maxPrice.min = Math.min(...prices);
-  form.maxPrice.max = priceCeiling;
+  const prices = venues.map((v) => v.pricePerPerson).filter((p) => p != null);
+  if (prices.length) {
+    priceCeiling = Math.max(...prices);
+    form.maxPrice.min = Math.min(...prices);
+    form.maxPrice.max = priceCeiling;
+  }
   form.date.min = today;
 }
 
@@ -121,17 +132,17 @@ function readCriteriaFromForm() {
     region: form.region.value,
     city: form.city.value,
     types: [...form.querySelectorAll('[name="types"]:checked')].map((box) => box.value),
-    guests: guests > 0 ? guests : null,
-    date: form.date.value >= today ? form.date.value : "",
-    maxPrice: maxPrice < priceCeiling ? maxPrice : null,
-    kidFriendly: form.kidFriendly.checked,
+    guests: info.capacity && guests > 0 ? guests : null,
+    date: info.dates && form.date.value >= today ? form.date.value : "",
+    maxPrice: info.price && maxPrice < priceCeiling ? maxPrice : null,
+    kidFriendly: info.kidFriendly && form.kidFriendly.checked,
     radius: origin && form.radius.value ? Number(form.radius.value) : null,
-    sort: form.sort.value,
+    sort: form.sort.value || "recommended",
   };
 }
 
 function updateControls() {
-  $("#max-price-label").textContent = formatMoney(Number(form.maxPrice.value));
+  if (info.price) $("#max-price-label").textContent = formatMoney(Number(form.maxPrice.value));
   form.radius.disabled = !origin;
   form.sort.querySelector('[value="distance"]').disabled = !origin;
   const active = [
@@ -269,6 +280,7 @@ function bindEvents() {
 
 async function init() {
   venues = await listVenues();
+  info = dataAvailable(venues);
   buildForm();
   criteria = readURL();
   syncFormFromCriteria();
@@ -276,6 +288,7 @@ async function init() {
   bindEvents();
   venueMap = createVenueMap($("#map"), { onSelect: openVenue });
   render();
+  writeURL(); // drop parameters the form rejected
   const deepLink = new URLSearchParams(location.search).get("venue");
   if (deepLink) openVenue(deepLink);
 }
